@@ -1,10 +1,33 @@
-create wrapper for simpler usage of TVM
-expose easy, chainable interface
+as far as we know, TVM is only framework that implements autotuning
+To create a scheduler, we examined TVM (commit id) with a few modifications to support measurements (check what else we changed)
 
-\section{Automated Benchmarking Framework}
-Explore TVM behavior
+written in Python and C++, interoperating
+import from many frontends, compilation for many backends
+has own graph-level and tensor operator-level representation
+calls target-specific compiler
+
+\subsection{RPC Architecture}
+allows autotuning logic to run on powerful server, but profiling to happen on target device
+
+\section{SimpleTVM}
+created wrapper for simpler usage of TVM
+expose easy, chainable interface
+forms base of scheduler internally
+Created Docker container to be able to easily deploy TVM with all dependencies on any server
+
+\subsection{Automated Benchmarking Framework}
+superb
+enable automated testing of different configurations to be able to run multiple configurations without human intervention
+
+\section{Experiments}
+Explore TVM behavior in different configurations of concurrency and resource sharing
+Evaluation in Jupyter notebooks
 
 \section{Issues with current autotuning design}
-lots of idle time
-parallel autotuning could fix it
-requries scheduler
+During experiments we found some issues
+Since only a single job is supported, AaaS is not possible efficiently
+We cant just run two jobs since they might interfere, as previous experiments show
+Also, lots of idle time due to synchronous design
+Dont want idle time because edge resources are limited (define edge)
+Enabling controlled parallel autotuning is necessary to solve those problems
+necessitates central scheduler that orchestrates all jobs

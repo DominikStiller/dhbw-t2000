@@ -1,10 +1,24 @@
-\section{Deep Learning Inference Optimization}
+additionally to traditional training and inference deep learning workflow, we introduce inference performance optimization to meet real-time requirements
+include graphic showing train-inference vs train-optimize-inference
+
+\section{Tensor Operator Optimization}
+to optimize for minimal inference time of whole network, we need to optimize every layer/tensor operator
 many possible implementations
 only few optimal ones for target device
-\section{Manual Optimiziation}
+focus on convolutions, as opposed to dense (why?)
+one layer corresponds to one tensor operator with a specific shape
+
+\section{Manual Optimization}
+state of the art cuDNN and TensorRT, taken as baseline
 requires deep knowledge of target device
 limitations
-\section{Automated Optimization}
+- no support for new devices
+- no support for unconventional shapes
+- no support for new graph-level optimizations
+
+\section{Automated Optimization / Autotuning}
 using machine learning
 vendor-agnostic
+define autotuning job, task
 describe autotuning process
+schedules as abstraction with knobs

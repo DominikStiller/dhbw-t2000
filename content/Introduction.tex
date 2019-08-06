@@ -1,10 +1,34 @@
-\section{Motivation}
+motivation:
 AI is increasing in popularity
-include studies
-no automated performacne optimization for real time CV applications
-not easy for non-expert users
-required: automated performance optimization as a service
-\section{State of the Art}
-\cite{Test.2019}
-\section{Task Description}
-research project
+AI is used in many different areas
+they arent experts
+Existing products for easier setup and deployment of training and inference infrastructure
+
+\section{Motivation}
+Often real-time necessary (examples)
+requires low inference time
+use of specific accelerator devices
+Generic models perform poorly because they dont make full use of accelerator capabilities
+Model needs to be attuned to accelerator
+Requires deep knowledge -> not easy for non-expert users
+
+\section{Problem}
+required: automated inference performance optimization (autotuning) so model performance can keep up with application demands
+imagine autotuning as a service where users can submit their trained model and receive an optimized version according to SLA
+Would make autotuning available for a wide audience on a large scale
+Only autotuning implementation in deep learning compiler stack TVM (find evidence), what we will be using throughout this project
+Only supports single jobs
+
+\section{Scope}
+In this paper, we enable large scale autotuning be developing a scheduler to orchestrate multiple jobs
+Design and create a working proof-of-concept implementation
+
+Research question:
+What improvements of efficiency in terms of
+- autotuning speed
+- resulting inference performance and 
+- resource utilization
+does a scheduler have, compared to the default design?
+
+dont improve actual autotuning, but propositions are made in future work
+dont write actual autotuning as a service product, would require user interface

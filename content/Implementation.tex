@@ -1,14 +1,43 @@
-\section{Design Principles}
-prototype
-touch TVM code as little as possible
-build on SimpleTVM
-should work with a variable number of clients
-\section{Scheduler Design}
-interleaving while keeping dependencies
-agnostic of stages, necessity for call next/is done methdods
-allows for multiple strategies
-\section{Approaches}
-In process vs RPC
-\section{RPC}
-schedulers and clients
+objectives:
+Be able to run an arbitrary number of autotuning jobs while
+1. maximizing inference performance
+2. minimizing autotuning time
+3. maximizing resource usage
+in order of priority
+
+\section{Design}
+general idea: interleave stages while keeping dependencies and preventing interference
+include graphics from poster
+
+to keep scheduler algorithm simple, we designed it to be agnostic of stages
+scheduler needs to know
+- knows which job will use which resource
+- knows which resource is currently available
+we call this load-aware
+theoretically, could work for any application that supports this interface
+
+client provides interface between autotuning logic and scheduler
+
+show abstract scheduler and client interface
+show scheduling pseudocode
+
+allows for variable strategies to compare different designs
+
+since only proof-of-concept, very specific and non-flexible/fault-tolerant
+
+\section{Implementation}
+Since TVM only provides a python interface, we are using python 3.5
+
+
+\subsection{RPC}
+We want clients to live in different docker containers, possibly physical servers (why?)
+requires RPC infrastructure consisting of scheduler and clients
+different from TVM RPC infrastructure
+clients register to scheduler
 describe endpoints
+
+\section{Challenges}
+evaluation of design choices takes long because autotuning is a slow process
+initially wanted to run scheduler and clients in one multi-threaded process without RPC to get results quickly
+not possible due to python global interpreter lock
+what else?

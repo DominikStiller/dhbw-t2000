@@ -1,18 +1,18 @@
-motivation:
 AI is increasing in popularity
 AI is used in many different areas
-they arent experts
+Users aren't experts
 Existing products for easier setup and deployment of training and inference infrastructure
 
-\section{Motivation}
+\section{Problem}
 Often real-time necessary (examples)
-requires low inference time
+Look closer at Seagate
+requires low inference time, every saved ms makes big difference when a lot of interences are being made
 use of specific accelerator devices
 Generic models perform poorly because they dont make full use of accelerator capabilities
 Model needs to be attuned to accelerator
 Requires deep knowledge -> not easy for non-expert users
 
-\section{Problem}
+\section{Motivation}
 required: automated inference performance optimization (autotuning) so model performance can keep up with application demands
 imagine autotuning as a service where users can submit their trained model and receive an optimized version according to SLA
 Would make autotuning available for a wide audience on a large scale
@@ -20,7 +20,7 @@ Only autotuning implementation in deep learning compiler stack TVM (find evidenc
 Only supports single jobs
 
 \section{Scope}
-In this paper, we enable large scale autotuning be developing a scheduler to orchestrate multiple jobs
+In this paper, we enable large scale autotuning by developing a scheduler to orchestrate multiple jobs
 Design and create a working proof-of-concept implementation
 
 Research question:
@@ -30,5 +30,5 @@ What improvements of efficiency in terms of
 - resource utilization
 does a scheduler have, compared to the default design?
 
-dont improve actual autotuning, but propositions are made in future work
-dont write actual autotuning as a service product, would require user interface
+dont improve autotuning process itself, but propositions are made in future work
+dont develop actual autotuning as a service product, but propose an architecture

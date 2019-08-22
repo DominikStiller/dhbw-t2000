@@ -22,3 +22,17 @@ vendor-agnostic
 define autotuning job, task
 describe autotuning process
 schedules as abstraction with knobs
+
+\section{TVM}
+
+TVM is framework that proposed and implements autotuning
+To create a scheduler, we examined TVM (commit id) with a few modifications to support measurements (check what else we changed)
+
+written in Python and C++, interoperating
+import from many frontends, compilation for many backends
+has own graph-level and tensor operator-level representation
+calls target-specific compiler
+
+\subsection{RPC Architecture}
+allows autotuning logic to run on powerful server, but profiling to happen on target device
+

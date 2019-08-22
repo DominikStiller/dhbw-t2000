@@ -1,15 +1,3 @@
-as far as we know, TVM is only framework that implements autotuning
-To create a scheduler, we examined TVM (commit id) with a few modifications to support measurements (check what else we changed)
-
-written in Python and C++, interoperating
-import from many frontends, compilation for many backends
-has own graph-level and tensor operator-level representation
-calls target-specific compiler
-
-\subsection{RPC Architecture}
-allows autotuning logic to run on powerful server, but profiling to happen on target device
-
-\section{SimpleTVM}
 created wrapper for simpler usage of TVM
 expose easy, chainable interface
 forms base of scheduler internally
@@ -20,14 +8,29 @@ superb
 enable automated testing of different configurations to be able to run multiple configurations without human intervention
 
 \section{Experiments}
-Explore TVM behavior in different configurations of concurrency and resource sharing
+Using SimpleTVM and superb, it was easy to explore TVM behavior in different configurations of concurrency and resource sharing
+First phase of experiments to investigate impact of interference
 Evaluation in Jupyter notebooks
 
-\section{Issues with current autotuning design}
-During experiments we found some issues
-Since only a single job is supported, AaaS is not possible efficiently
-We cant just run two jobs since they might interfere, as previous experiments show
-Also, lots of idle time due to synchronous design
-Dont want idle time because edge resources are limited (define edge)
-Enabling controlled parallel autotuning is necessary to solve those problems
-necessitates central scheduler that orchestrates all jobs
+\section{Shortcomings of TVM's Autotuning}
+We noticed lots of resource idle time due to synchronous design
+Show figure from poster
+Want to minimize idle time because edge resources are limited (define edge)
+
+Include table with three experiments here
+Describe experiments in table in terms of parameters (resource utilization, autotuning time, inference performance) and where the optimum of those is
+State that autotuning time is not as crucial since it is rendered negligible by a large amount of inferences
+We conducted two motivating experiments...
+
+Since only a single job is supported, AaaS is not possible efficiently, does not scale
+Could scale up by running further autotuning jobs on additional servers, but hardware is expensive so it is not an economic approach. We cannot simply use machines from a PaaS provider since actual target device needs to be used
+We cant just run two jobs in parallel on the same hardware since they might interfere, as previous experiments show decreased inference performance
+
+This means, with current implementation and architecture of autotuning in TVM, there is no way to scale up while keeping inference time low
+
+objectives:
+Be able to run an arbitrary number of autotuning jobs while
+1. maximizing inference performance
+2. maximizing resource usage
+3. minimizing autotuning time
+in order of priority

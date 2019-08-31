@@ -1,36 +1,68 @@
+Using TVM follows the same workflow every time
+To be able to quickly test different scenarios, we created a simpler interface for TVM, called SimpleTVM
+
+\section{Design}
 created wrapper for simpler usage of TVM
 expose easy, chainable interface
-forms base of scheduler internally
-Created Docker container to be able to easily deploy TVM with all dependencies on any server
-
-\subsection{Automated Benchmarking Framework}
-superb
+Created automated benchmarking framework superb
 enable automated testing of different configurations to be able to run multiple configurations without human intervention
 
-\section{Experiments}
+Docker container to be able to easily deploy TVM with all dependencies on any server
+
+\section{Exploration}
 Using SimpleTVM and superb, it was easy to explore TVM behavior in different configurations of concurrency and resource sharing
 First phase of experiments to investigate impact of interference
 Evaluation in Jupyter notebooks
 
-\section{Shortcomings of TVM's Autotuning}
+\section{Autotuning Limitations}
+
+\subsection{Resource Utilization}
 We noticed lots of resource idle time due to synchronous design
 Show figure from poster
 Want to minimize idle time because edge resources are limited (define edge)
+Fundamental restriction due to dependencies of stages, cannot be changed for a single job
 
-Include table with three experiments here
-Describe experiments in table in terms of parameters (resource utilization, autotuning time, inference performance) and where the optimum of those is
-State that autotuning time is not as crucial since it is rendered negligible by a large amount of inferences
-We conducted two motivating experiments...
-
-Since only a single job is supported, AaaS is not possible efficiently, does not scale
-Could scale up by running further autotuning jobs on additional servers, but hardware is expensive so it is not an economic approach. We cannot simply use machines from a PaaS provider since actual target device needs to be used
-We cant just run two jobs in parallel on the same hardware since they might interfere, as previous experiments show decreased inference performance
-
-This means, with current implementation and architecture of autotuning in TVM, there is no way to scale up while keeping inference time low
+\subsection{Scalability}
+Our goal is to enable large-scale autotuning for our AaaS, autotune multiple models at the same time
 
 objectives:
 Be able to run an arbitrary number of autotuning jobs while
-1. maximizing inference performance
-2. maximizing resource usage
-3. minimizing autotuning time
+1. maximizing inference performance: ultimate goal of autotuning
+2. minimize hardware requirements: save cost
+3. minimizing autotuning time: make autotuning worth the effort
 in order of priority
+State that autotuning time is not as crucial since it is rendered negligible by a large amount of inferences
+
+With default tvm, there are two possible setups
+Include figure with two setups
+Include table with three experiments here
+
+1. two completely separate autotuning jobs running independently on additional dedicated servers, one autotuning runner per server
+Pros: good autotuning and inference time
+Cons: Costly because we need multiple sets of the same hardware
+not an economically feasible approach. We cannot simply use machines from a PaaS provider since actual target device needs to be used
+Alternatively, we could use the same server and run them in sequence, trading off hardware required for autotuning time
+
+2. two autotuning runners sharing the same server
+Pros: only one set of hardware
+Cons:
+- interference drives up autotuning time
+Autotuning takes long (in our tests anywhere between 3 and 36 hours, depending on hardware and network size)
+Especially update model takes 64\% longer when two jobs are running simultaneously
+- results in worse inference performance because profiling is distorted (show numbers)
+
+In both setups, we do not meet all objectives
+Gets worse the more jobs we add
+AaaS is not possible efficiently with current implementation and architecture of autotuning in TVM, does not scale well
+
+Ideally:
+Prevent interference, because it affects autotuning time and inference performance
+Minimize hardware required by utilizing available hardware fully before adding new servers for cost reasons
+
+However, there does not seem to be any solution yet
+
+\subsection{Similar Problems}
+In general, problem can be formulated as follows:
+How can resources be shared optimally between multiple tasks that are partially idle?
+
+Add two examples

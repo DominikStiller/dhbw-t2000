@@ -3,30 +3,40 @@ necessitates central scheduler that orchestrates all jobs
 
 \section{Design}
 general idea: interleave stages while keeping dependencies and preventing interference
+Make use of idle time
 Want to keep both amount of hardware and inference time low, we want to run multiple jobs on the same hardware but make leverage idle time to interleave stages
-
-
 include figure from poster
 
+since only proof-of-concept, very specific to make it work quickly and non-flexible/fault-tolerant
+Leverage SimpleTVM
+
+\subsection{Scheduling Algorithms}
 to keep scheduler algorithm simple, we designed it to be agnostic of stages
 scheduler needs to know
 - knows which job will use which resource
 - knows which resource is currently available
 we call this load-aware
-theoretically, could work for any application that supports this interface
-
-client provides interface between autotuning logic and scheduler
-
-show abstract scheduler and client interface
-show scheduling pseudocode
+theoretically, could work for any application that supports this interface (e.g. TC?)
 
 allows for variable strategies to compare different designs
+show scheduling pseudocode
 
-since only proof-of-concept, very specific and non-flexible/fault-tolerant
+\subsection{Autotuning Decomposition}
+Necessary step before implementation
+Show figure
+Default TVM:
+Procedure is monolithic
+Start runner and it does not stop until its finished
+We want to be able to control the execution of individual stages
+
+Decompose monolith into separate units for stages
+This allows us to control when which stage is being executed
+Necessary for scheduler
+Runner does not do anything on its own but waits for commands
 
 \section{Implementation}
+Figure with autotuning procedure with scheduler
 Since TVM only provides a python interface, we are using python 3.5
-
 
 \subsection{RPC}
 We want clients to live in different docker containers, possibly physical servers (why?)
@@ -35,12 +45,20 @@ different from TVM RPC infrastructure
 clients register to scheduler
 describe endpoints
 
-\section{Challenges}
+\subsection{Components}
+Show whole stack, denote what happens in scheduler, what happens in runner
+Show which communication is in-process and which is RPC
+JobManager negotiates between autotuning stages interface and simple scheduler interface
+show abstract scheduler and client interface
+
+\subsection{Challenges}
 evaluation of design choices takes long because autotuning is a slow process
 initially wanted to run scheduler and clients in one multi-threaded process without RPC to get results quickly
 not possible due to python global interpreter lock
 what else?
 
-\section{AaaS Architecture Proposal}
+\section{Autotuning as a Service}
+imagine autotuning as a service where users can submit their trained model and receive an optimized version according to SLA
+Describe as a service
 More sophisticated scheduler, requires moving more autotuning logic from client to scheduler
 Make client stateless

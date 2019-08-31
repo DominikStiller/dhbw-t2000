@@ -35,16 +35,15 @@
 	style=ieee
 ]{biblatex}
 \usepackage[activate={true,nocompatibility},final,tracking=true,kerning=true,spacing=true,factor=1100,stretch=10,shrink=10]{microtype}
-
+%\usepackage{showframe}
 
 %----------------------------------------------------------------------------
 % Package Config
 %----------------------------------------------------------------------------
-
 % KOMA-Script
 \KOMAoptions{
 	pagesize=pdftex,
-	twoside=false,		% Einseitiger Druck.
+	twoside,		% Einseitiger Druck.
 	parskip=half,		% Halbe Zeile Abstand zwischen Absätzen.
 	headheight = 12pt,	% Höhe der Kopfzeile
 	headsepline,		% Linie nach Kopfzeile.
@@ -52,7 +51,7 @@
 	footheight = 16pt,	% Höhe der Fusszeile
 	abstract=true,		% Abstract Überschriften
 	DIV=calc,			% Satzspiegel berechnen
-	%BCOR=8mm,			% Bindekorrektur links: 8mm
+	BCOR=20mm,			% Bindekorrektur links: 8mm
 	headinclude=false,	% Kopfzeile nicht in den Satzspiegel einbeziehen
 	footinclude=false,	% Fußzeile nicht in den Satzspiegel einbeziehen
 	listof=totoc,		% Abbildungs-/ Tabellenverzeichnis im Inhaltsverzeichnis darstellen

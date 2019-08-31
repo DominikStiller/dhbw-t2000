@@ -1,0 +1,61 @@
+Often real-time necessary (examples)
+Look closer at Seagate
+requires low inference time, every saved ms makes big difference when a lot of interences are being made
+use of specific accelerator devices
+Generic models perform poorly because they dont make full use of accelerator capabilities
+Model needs to be attuned to accelerator
+
+\section{Tensor Operator Optimization}
+additionally to traditional training and inference deep learning workflow, we introduce inference performance optimization to meet real-time requirements
+include graphic showing train-inference vs train-optimize-inference
+
+to optimize for minimal inference time of whole network, we need to optimize every layer/tensor operator
+especially conv2d, because there are many and they are very computationally intensive
+many possible implementations
+only few optimal ones for target device
+focus on convolutions, as opposed to dense (why?)
+one layer corresponds to one tensor operator with a specific shape
+
+\section{Manual Optimization}
+state of the art cuDNN and TensorRT and Intel MKL, taken as baseline
+requires deep knowledge of target device, usually provided by vendor
+limitations
+- no support for new devices
+- no support for unconventional shapes
+- no support for new graph-level optimizations
+elaborate limitations
+
+\section{Automated Optimization}
+vendor-agnostic
+define autotuning job, task
+describe autotuning process on high level
+definition of search space (loop unrolling, tiling, threads), example code?
+Problem: search space is very large (billions), and any one of them could be the best one
+impossible to try all
+look at both TVM and TC
+
+has same or even better performance than hand-optimized libraries
+show numbers
+
+There are two frameworks that implement autotuning
+
+\subsection{TensorComprehensions}
+does not use machine learning
+
+\subsection{TVM}
+using machine learning
+TVM is framework that proposed and implements autotuning
+To create a scheduler, we examined TVM (commit id) with a few modifications to support measurements (check what else we changed)
+
+written in Python and C++, interoperating
+import from many frontends, compilation for many backends
+has own graph-level and tensor operator-level representation
+calls target-specific compiler
+
+first extraction of tasks
+schedules as abstraction with knobs
+details of autotuning process
+RPC allows autotuning logic to run on powerful server, but profiling to happen on target device
+with figure
+
+

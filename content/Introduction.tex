@@ -1,34 +1,32 @@
 AI is increasing in popularity
 AI is used in many different areas
 Users aren't experts
-Existing products for easier setup and deployment of training and inference infrastructure
+Existing products for easier setup and deployment of training and inference infrastructure by offering AI infrastructure as a service
 
 \section{Problem}
-Often real-time necessary (examples)
-Look closer at Seagate
-requires low inference time, every saved ms makes big difference when a lot of interences are being made
-use of specific accelerator devices
-Generic models perform poorly because they dont make full use of accelerator capabilities
-Model needs to be attuned to accelerator
+Common applications like industrial monitoring or autonomous driving require real-time performance
+accelerator hardware with device-specific model optimizations needed
+Currently manual optimization
 Requires deep knowledge -> not easy for non-expert users
 
-\section{Motivation}
-required: automated inference performance optimization (autotuning) so model performance can keep up with application demands
-imagine autotuning as a service where users can submit their trained model and receive an optimized version according to SLA
-Would make autotuning available for a wide audience on a large scale
-Only autotuning implementation in deep learning compiler stack TVM (find evidence), what we will be using throughout this project
-Only supports single jobs
+required: automated inference performance optimization (autotuning)
+To offer it as a service so it can be used by a larger audience requires it to be scalable
+Current autotuning does not scale well
+To the best of our knowledge, there is no existing solution.
 
 \section{Scope}
-In this paper, we enable large scale autotuning by developing a scheduler to orchestrate multiple jobs
+In this paper, we enable large-scale autotuning by sharing computation resources and controlling jobs with a central, load-aware scheduler
+First step, develop framework to examine capabilities and limitations of TVM's autotuning in different configurations on multiple accelerator devices
 Design and create a working proof-of-concept implementation
+Evaluate our scheduler design and compare with default implementation
+Propose an Autotuning as a Service architecture as base for future work
 
-Research question:
-What improvements of efficiency in terms of
+Thesis:
+A load-aware scheduler makes large-scale autotuning more efficient in terms of
 - autotuning speed
 - resulting inference performance and 
-- resource utilization
-does a scheduler have, compared to the default design?
+- hardware requirements
+compared to the default design.
 
 dont improve autotuning process itself, but propositions are made in future work
 dont develop actual autotuning as a service product, but propose an architecture

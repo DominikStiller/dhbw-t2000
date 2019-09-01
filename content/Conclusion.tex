@@ -1,17 +1,9 @@
 Describe results
 Only used scheduler for TVM, but should work for TC as well because it also has stage dependencies
-Enabled large-scale autotuning with only small sacrifices in autotuning time
+Enabled large-scale autotuning with only small sacrifices in autotuning time, thesis holds for our limited set of tests
 
 \section{Future Work}
-Predictive scheduler using times for task to make scheduling more intelligent
-Requires more control in scheduler, not only simplified interface
-running update model and build of one job directly after another will probably decrease waiting time, since that job can then already use the target device, so there is less target device idle time
-
-Keep trained model and update it every n new entries to skip loading history time for every task
-Check currently known best configurations and see if SLA is already met before actually starting autotuning
-Automatically set up autotuning infrastructure
-Split jobs on task and search space level to parallelize more
-- make better use of unused resources
-- faster autotuning, e.g. for paying customers
+More intelligent scheduler algorithm
+Get rid of tracker and let scheduler assign servers
 
 After best approach is found from prototype, make into mature product to enable real-time DL applications for everybody

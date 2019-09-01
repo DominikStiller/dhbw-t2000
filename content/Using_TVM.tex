@@ -1,26 +1,44 @@
-Using TVM follows the same workflow every time
-To be able to quickly test different scenarios, we created a simpler interface for TVM, called SimpleTVM
+We want to explore capabilities and limitations of TVM
+Want to be able to quickly test different scenarios (models, configurations, hardware)
 
-\section{Design}
+\section{SimpleTVM}
+We created a simpler interface for TVM, called SimpleTVM
+Using TVM follows the same workflow every time
 created wrapper for simpler usage of TVM
 expose easy, chainable interface
+Makes it easy for researchers who are new to TVM to get started
+
 Created automated benchmarking framework superb
 enable automated testing of different configurations to be able to run multiple configurations without human intervention
 
 Docker container to be able to easily deploy TVM with all dependencies on any server
 
-\section{Exploration}
-Using SimpleTVM and superb, it was easy to explore TVM behavior in different configurations of concurrency and resource sharing
-First phase of experiments to investigate impact of interference
-Evaluation in Jupyter notebooks
+\section{Parameters}
+Autotuning with TVM has a plethora of parameters that can affect both the autotuning process itself and the result.
+Setting these parameters properly requires knowledge of how TVM works as well as the hardware.
 
-\section{Autotuning Limitations}
+List of most important parameters
+\begin{description}
+	\item[Number of trials] Number of iterations, tradeoff between autotune time vs inference performance, converges
+	\item[Profiling timeout] attune to target device
+	\item[Batch size] how many configurations are selected and built, usually number of cores, also default. not same as model batch size
+	\item[Transfer learning] between tasks always, but between jobs? For experiments
+\end{description}
+
+
+\section{Capabilities}
+Inference improvement vs default tvm and TF
+Good in tradeoff with autotuning
+Use numbers from paper and own numbers
+
+\section{Limitations}
+TVM suffers from some fundamental restrictions, which cannot be changed in the current design.
 
 \subsection{Resource Utilization}
 We noticed lots of resource idle time due to synchronous design
 Show figure from poster
 Want to minimize idle time because edge resources are limited (define edge)
-Fundamental restriction due to dependencies of stages, cannot be changed for a single job
+Due to dependencies of stages, cannot be changed for a single job
 
 \subsection{Scalability}
 Our goal is to enable large-scale autotuning for our AaaS, autotune multiple models at the same time
@@ -38,18 +56,19 @@ Include figure with two setups
 Include table with three experiments here
 
 1. two completely separate autotuning jobs running independently on additional dedicated servers, one autotuning runner per server
-Pros: good autotuning and inference time
-Cons: Costly because we need multiple sets of the same hardware
+Pros: good autotuning and inference time, because they don't affect each other
+Cons: Costly because we need multiple sets of the same hardware, bad hardware utilization
 not an economically feasible approach. We cannot simply use machines from a PaaS provider since actual target device needs to be used
-Alternatively, we could use the same server and run them in sequence, trading off hardware required for autotuning time
+Alternatively, we could use the same server and run them in sequence, trading off hardware required (halved) for autotuning time(doubled)
 
 2. two autotuning runners sharing the same server
 Pros: only one set of hardware
 Cons:
 - interference drives up autotuning time
+Explain interference
 Autotuning takes long (in our tests anywhere between 3 and 36 hours, depending on hardware and network size)
-Especially update model takes 64\% longer when two jobs are running simultaneously
-- results in worse inference performance because profiling is distorted (show numbers)
+Especially update model takes 64\% longer when two jobs are running simultaneously, very CPU intensive (50-70\%)
+- results in worse inference performance because profiling is distorted (show numbers), as we saw most important
 
 In both setups, we do not meet all objectives
 Gets worse the more jobs we add

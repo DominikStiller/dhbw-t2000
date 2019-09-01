@@ -1,20 +1,31 @@
-Often real-time necessary (examples)
+The traditional machine learning workflow consists of training and inference.
+The number of inferences heavily outweighs the number of trainings, since an unlimited number of inferences can be made once a model is trained, albeit model re-training is done periodically to improve accuracy.
+Thus, the performance optimization of inference is an important field.
+Reduction in inference time has advantages
+- need less hardware to perform same number of inferences
+- higher number of inferences with same hardware
+- enables real-time applications such as autonomous driving or industrial monitoring
+Especially in real-time applications, a lot of inferences are being made. every saved ms makes big difference
 Look closer at Seagate
-requires low inference time, every saved ms makes big difference when a lot of interences are being made
+
 use of specific accelerator devices
 Generic models perform poorly because they dont make full use of accelerator capabilities
-Model needs to be attuned to accelerator
+Not only need capable accelerator, but also model that is attuned to leverage its full potential
 
 \section{Tensor Operator Optimization}
 additionally to traditional training and inference deep learning workflow, we introduce inference performance optimization to meet real-time requirements
 include graphic showing train-inference vs train-optimize-inference
 
-to optimize for minimal inference time of whole network, we need to optimize every layer/tensor operator
+to optimize for minimal inference time of whole network, we need to optimize implementation of every layer, or rather the respective tensor operator with the specific parameters (shape, padding, stride) in the computation graph
 especially conv2d, because there are many and they are very computationally intensive
-many possible implementations
-only few optimal ones for target device
-focus on convolutions, as opposed to dense (why?)
-one layer corresponds to one tensor operator with a specific shape
+Dense not so important because less computational intensive (number?)
+
+WHAT should be calculated is determined by model
+HOW it should be calculated is not specified, so actual implementation can change
+simple default implementation, but also loop unrolling, tiling, threads, example code?
+
+It is important to note that the optimal implementation (regarding speed, memory usage) is very much dependent on target device
+memory sharing and data reuse
 
 \section{Manual Optimization}
 state of the art cuDNN and TensorRT and Intel MKL, taken as baseline
@@ -24,15 +35,19 @@ limitations
 - no support for unconventional shapes
 - no support for new graph-level optimizations
 elaborate limitations
+high-level optimization need to wait until vendor provides low-level support
+
 
 \section{Automated Optimization}
-vendor-agnostic
-define autotuning job, task
+vendor-agnostic and does not require expert knowledge
+Enables innovation by enabling high-level optimization and fostering experimentation with unconventional layers, not supported by manual frameworks
 describe autotuning process on high level
-definition of search space (loop unrolling, tiling, threads), example code?
-Problem: search space is very large (billions), and any one of them could be the best one
+definition of search space (loop unrolling, tiling, threads)
+Problem: search space is very large (billions), and any one of them could be the best one for one target device
+
 impossible to try all
-look at both TVM and TC
+autotuning frameworks have some solution to explore search space rapidly
+look at TVM and TC
 
 has same or even better performance than hand-optimized libraries
 show numbers
@@ -45,17 +60,18 @@ does not use machine learning
 \subsection{TVM}
 using machine learning
 TVM is framework that proposed and implements autotuning
-To create a scheduler, we examined TVM (commit id) with a few modifications to support measurements (check what else we changed)
 
-written in Python and C++, interoperating
 import from many frontends, compilation for many backends
 has own graph-level and tensor operator-level representation
 calls target-specific compiler
 
+define autotuning job, task
 first extraction of tasks
 schedules as abstraction with knobs
 details of autotuning process
+Profiling repeated multiple times
 RPC allows autotuning logic to run on powerful server, but profiling to happen on target device
 with figure
 
-
+In this project, we use TVM because of the novel, machine learning-based approach
+Using (commit id) with a few modifications to support measurements (check what else we changed)

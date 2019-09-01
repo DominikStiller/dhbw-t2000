@@ -15,18 +15,21 @@ Current autotuning does not scale well
 To the best of our knowledge, there is no existing solution.
 
 \section{Scope}
-In this paper, we enable large-scale autotuning by sharing computation resources and controlling jobs with a central, load-aware scheduler
-First step, develop framework to examine capabilities and limitations of TVM's autotuning in different configurations on multiple accelerator devices
+In this paper, we design and develop the prototype of a central, load-aware scheduler to solve this problem
+This scheduler controls multiple jobs that share computation resources to enable large-scale artificial neural network autotuning
+First step, develop framework to examine capabilities and limitations of autotuning in different configurations on multiple accelerator devices
+Allows us to find properties which we can leverage to parallelize autotuning
 Design and create a working proof-of-concept implementation
 Evaluate our scheduler design and compare with default implementation
 Propose an Autotuning as a Service architecture as base for future work
 
 Thesis:
-A load-aware scheduler makes large-scale autotuning more efficient in terms of
-- autotuning speed
+Controlling the execution of multiple jobs by a load-aware scheduler makes large-scale autotuning more efficient in terms of
+- autotuning completion time
 - resulting inference performance and 
 - hardware requirements
-compared to the default design.
 
 dont improve autotuning process itself, but propositions are made in future work
 dont develop actual autotuning as a service product, but propose an architecture
+
+Project was conducted by Hewlett Packard Labs

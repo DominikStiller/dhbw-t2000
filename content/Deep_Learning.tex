@@ -11,7 +11,7 @@ more layers: pooling and convolutions
 important for computer vision
 
 \section{Computation Graph Representation}
-in essence just a lot of calculations
-calculations can be represented in computation graph
-graph describes which calculations need to be done and stays the same
-tensor operators implement convolutions, pooling and need to be optimized for accelerator hardware
+In its essence, machine learning is a series of calculations, mostly on matrices and vectors
+While neural network models consist of a series of layers, machine learning frameworks usually represent them in a computation graph.
+The computation graph's first vertex is the input node, followed by a number of tensor operators (convolutions, pooling) and finally an output node.
+The edges describes how data flows between the vertices.

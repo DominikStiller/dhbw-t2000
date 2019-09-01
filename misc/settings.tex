@@ -15,6 +15,7 @@
 \usepackage{mathtools}
 \usepackage{interval}
 \usepackage{graphicx}
+\usepackage{subcaption}
 \usepackage[hidelinks]{hyperref}
 \usepackage{geometry}
 \usepackage{textcomp}
@@ -27,7 +28,7 @@
 \usepackage{csquotes}
 \usepackage[toc,nonumberlist,acronym,nopostdot]{glossaries}
 \usepackage[
-	backend=bibtex,
+	backend=biber,
 	bibwarn=true,
 	bibencoding=utf8,
 	sortlocale=en_US,
@@ -35,15 +36,16 @@
 	style=ieee
 ]{biblatex}
 \usepackage[activate={true,nocompatibility},final,tracking=true,kerning=true,spacing=true,factor=1100,stretch=10,shrink=10]{microtype}
-%\usepackage{showframe}
+
 
 %----------------------------------------------------------------------------
 % Package Config
 %----------------------------------------------------------------------------
+
 % KOMA-Script
 \KOMAoptions{
 	pagesize=pdftex,
-	twoside,		% Einseitiger Druck.
+	twoside,			% Einseitiger Druck.
 	parskip=half,		% Halbe Zeile Abstand zwischen Absätzen.
 	headheight = 12pt,	% Höhe der Kopfzeile
 	headsepline,		% Linie nach Kopfzeile.
@@ -121,9 +123,9 @@
 % Page
 \geometry{margin=2.5cm, foot=1cm}
 
-% Font
+% 
 \KOMAoptions{fontsize=12pt}
-\DeclareMathSizes{12pt}{14pt}{10pt}{10pt}
+\DeclareMathSizes{12pt}{12pt}{10pt}{10pt}
 \setkomafont{title}{\Huge\textbf}
 \onehalfspacing
 

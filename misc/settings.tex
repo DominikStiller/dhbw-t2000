@@ -32,7 +32,7 @@
 	bibwarn=true,
 	bibencoding=utf8,
 	sortlocale=en_US,
-	urldate=long,
+	url=false,
 	style=ieee
 ]{biblatex}
 \usepackage[activate={true,nocompatibility},final,tracking=true,kerning=true,spacing=true,factor=1100,stretch=10,shrink=10]{microtype}
@@ -68,6 +68,13 @@
 
 % biblatex
 \addbibresource{./misc/references.bib}
+\DeclareSourcemap{
+	\maps[datatype=bibtex]{
+		\map{
+			\step[fieldsource=title, match=\regexp{\b([A-Z]{2,})\b}, replace={{}{$1}}]
+		}
+	}
+}
 
 % Microtype
 % http://www.khirevich.com/latex/micrsotype/

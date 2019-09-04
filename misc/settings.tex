@@ -19,7 +19,7 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{geometry}
 \usepackage{textcomp}
-\usepackage{siunitx}
+\usepackage[binary-units=true]{siunitx}
 \usepackage{setspace}
 \usepackage{array}
 \usepackage[outputdir=build]{minted}
@@ -121,6 +121,8 @@
 \let\oldabs\abs
 \def\abs{\@ifstar{\oldabs}{\oldabs*}}
 \makeatother
+
+\pdfinclusioncopyfonts=1
 
 
 %----------------------------------------------------------------------------

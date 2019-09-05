@@ -49,77 +49,103 @@ Since we want to test TVM on a variety of machines, we created Docker images to 
 Autotuning with TVM offers a plethora of configuration options that affect both the autotuning process itself and the result. Setting these parameters to adequate values for the given job and hardware requires knowledge of how TVM works, but in some cases it is a matter of trial and error. However, guidelines and descriptions of the most important parameters can help. All of the following parameters can be specified when using SimpleTVM
 \begin{description}
 	\item[Number of trials] This determines the number of configurations to try for each autotuning task. A higher number will generally result in a better inference performance since the search space can be explored more, but this results in an increased autotuning completion time. However, the result starts to converge to the optimum after about 500 iterations, so there is a limit to the inference performance that can be achieved. Especially with CPUs, that have a small search space compared to \glspl{gpu}, there might not even be more options to try. Practically, the optimal result can be expected with the number of trials set to 2000.
-	\item[Profiling timeout] This determines the time after which the profiling for one configuration is killed. Since every tensor operator has a different computational intensity and performance varies across types of hardware, this timeout needs to be adjusted accordingly. A high profiling timeout will allow longer execution, which drives up total autotuning completion time and might not yield better results since long-running implementations are not good and can safely be killed. A low profiling timeout might also kill of good implementations. It should be noted that the optimal timeout does not depend on the actual execution time, since profiling runs the implementation multiple times and might even dynamically adjust the number of executions. In practice, a low timeout should be set first. If the log shows too many timeout errors, the timeout can be increased. 5 seconds seems to be a good value for \gls{gpu} target devices, while 20 seconds or more are appropriate for CPU autotuning.
+	\item[Profiling timeout] This determines the time after which the profiling for one configuration is killed if it runs too long. Since every tensor operator has a different computational intensity and performance varies across types of hardware, this timeout needs to be adjusted accordingly. A high profiling timeout will allow longer execution, which drives up total autotuning completion time and might not yield better results since long-running implementations are not good and can safely be killed. A low profiling timeout might also kill of good implementations. It should be noted that the optimal timeout does not depend on the actual execution time, since profiling runs the implementation multiple times and might even dynamically adjust the number of executions. In practice, a low timeout should be set first. If the log shows too many timeout errors, the timeout can be increased. 5 seconds seems to be a good value for \gls{gpu} target devices, while 20 seconds or more are appropriate for CPU autotuning.
 	\item[Batch size] This determines how many configurations are selected and built in parallel for every autotuning iteration. This can speed up autotuning considerably, especially if a large number of CPU cores are available on the client to run many compiler processes in parallel. The number of cores is also the default value. For larges batches, the model is updated and queried less frequently, but in general there seems to be no detrimental effect of having a high batch size. It should be notes that this is not the same as the batch size of the model, which would change the shape of the tensor operators.
 	\item[Transfer learning] This determines whether or not transfer learning is used between jobs. According to this setting, the data from the global autotuning database might be used to train the cost model at the start of each task. Between tasks, there is always transfer learning. Usually, transfer learning should be enabled for the most optimal inference performance results. However, we disable transfer learning for experiments to guarantee a fair comparison between earlier and later ones.
 \end{description}
 
 
 \section{Capabilities}
-Using SimpleTVM and our knowledge about proper parameter settings as foundation, we evaluated how TVM performs in comparison to state-of-the-art manual tensor operator libraries. We use TensorFlow 1.14 as baseline since it is a popular framework for \gls{dl} applications. cuDNN is enabled for \gls{gpu}. Autotuning with TVM was executed with 2000 trials, so the numbers should represent the optimal implementation. For evaluation, we test a Mobilenet with a batch size of on two mobile-grade CPUs (Intel Core i5-5300U and i5-7300U) and a server-grade \gls{gpu} (NVIDIA Tesla K80). Additionally, we test a heavier ResNet-18 on the \gls{gpu}.
+Using SimpleTVM and our knowledge about proper parameter settings as foundation, we evaluated how TVM performs in comparison to state-of-the-art manual tensor operator libraries. We use TensorFlow 1.14 as baseline since it is a popular framework for \gls{dl} applications. cuDNN is enabled for \gls{gpu}. Autotuning with TVM was executed with 2000 trials, so the numbers should represent the optimal implementation. For evaluation, we test a Mobilenet with a batch size of one on two mobile-grade CPUs (Intel Core i5-5300U and i5-7300U), a server-grade CPU (Intel Xeon E5-2650 v3) and a high-end \gls{gpu} (NVIDIA Tesla K80). The same two images were used as model input in all cases.
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth]{chart_inference_tf_vs_tvm}%
 	\caption{Inference performance with TensorFlow and TVM}
 	\label{fig:inf-tf-tvm}
 \end{figure}
 
-Inference improvement vs default tvm and TF
-Good in tradeoff with autotuning
-Use numbers from paper and own numbers
+In all cases does TVM with autotuning show performance improvements over TensorFlow. Especially on CPU, inference speed improves by 44\% (\SI{18.4}{\milli\second}) for the i5-5300U and by 30\% (\SI{5.9}{\milli\second}) for the i5-7300U. But also for the \gls{gpu}, the autotuned version is 17\% (\SI{0.9}{\milli\second}) faster, albeit measurement inaccuracies are possible on this small time scale. Nonetheless, even a similar performance is impressive considering that no human expert knowledge was required and autotuning took less than \SI{6}{\hour} for CPU and less than \SI{12}{\hour} for \gls{gpu} (due to the much larger search space). Further results for a wider variety of devices and models, including recurrent neural networks, are provided in \cite{Chen.2018} and show similar improvements.\todo{Add analysis for Xeon}
+
+TVM performs better than TensorFlow on CPU even without autotuning. Graph-level optimizations alone are enough to result in faster inference by 24\% (\SI{9.9}{\milli\second}) for the i5-5300U and by 7\% (\SI{1.4}{\milli\second}) for the i5-7300U. Since only a series of pre-defined transformation passes are applied to the Relay program, graph-level optimization is performed in a matter of seconds. However, non-autotuned TVM cannot keep up with TensorFlow on GPU, it is 31\% (\SI{1.6}{\milli\second}) slower.
+
+These results show that TVM on par with manual optimization, at least for our limited evaluation scenarios. Furthermore, TVM is under active development and can be expected to show further performance improvements in the future.
 
 \section{Limitations}
-TVM suffers from some fundamental restrictions, which cannot be changed in the current design.
+While the autotuning results are promising, we found that autotuning process suffers from some fundamental restrictions inherent to the current design which limit its efficiency. For all real measurements in this section, we evaluated autotuning of a ResNet-18 (12 convolutional layers, 1 fully-connected layer) with 2000 iterations per task on two machines with two Intel Xeon E5-2650 v3 CPUs and four Tesla K80 GPUs, one machine for client and target device each.
 
 \subsection{Resource Utilization}
-We noticed lots of resource idle time due to synchronous design
-Show figure from poster
-Want to minimize idle time because edge resources are limited (define edge)
-Due to dependencies of stages, cannot be changed for a single job
+Since stages in autotuning depend on results of the previous stages (configurations are required for building, executables are necessary for profiling, time measurements are used to update the model), they need to be executed in sequence. Because profiling runs on the target device, the result is a lot of idle time on both the client and the target device. This sub-optimal resource\footnote{We define \textit{resource} as a machine that executes some stage in the autotuning process, e.g., the target device or the hardware that the client runs on.} utilization is exemplified in Figure \ref{fig:tvm-res-util}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{tvm_resource_utilization}%
+	\caption{Resource utilization during autotuning}
+	\label{fig:tvm-res-util}
+\end{figure}
+
+Measurements with our test setup showed that, for a total autotuning completion time of \SI{14.5}{\hour}, the client is idle for \SI{6.6}{\hour} (45\%) and the target device for \SI{7.9}{\hour} (55\%). Since computation resources, especially \gls{dl} accelerators, are rather costly, we want to minimize resource idle time. If existing resources are utilized better, it might not be necessary to acquire new hardware. If the individual occurences of idle time are long enough, it might be possible to use it for other computations in between. Indeed, the mean execution time for each stage is as follows: \SI{8.3}{\second} for building, \SI{39.5}{\second} for profiling, and \SI{44.0}{\second} for updating the model and selecting the next batch. This is long enough to reasonably assume that resource utilization can be improved by sharing the device. However, interference must be prevented.
 
 \subsection{Scalability}
-Our goal is to enable large-scale autotuning for our AaaS, autotune multiple models at the same time
+In preparation for enabling autotuning on a larger-scale, we need to examine the scalability of the current design. Scalability in this section refers to the ability to run an arbitrary number of autotuning jobs at the same time without sacrificing efficiency and result quality. We define objectives, that a scalable solution should satisfy:
+\begin{enumerate}
+	\item High inference performance, since it is the ultimate goal of autotuning
+	\item Low amount of required hardware, since additional devices are costly
+	\item Low autotuning time, since autotuning takes long
+\end{enumerate}
+These objectives are listed in order of priority. Good inference performance is the primary objective. It obviates the need to buy new hardware. Furthermore, there usually is a large amount of inferences which makes a longer autotuning time negligible over time. Rapid autotuning is nonetheless desirable.
 
-objectives:
-Be able to run an arbitrary number of autotuning jobs while
-1. maximizing inference performance: ultimate goal of autotuning
-2. minimize hardware requirements: save cost
-3. minimizing autotuning time: make autotuning worth the effort
-in order of priority
-State that autotuning time is not as crucial since it is rendered negligible by a large amount of inferences
+We compare two setups for scaling that are possible using only the components that TVM comes with by default, schematically depicted in Figure \ref{fig:tvm-scaling-setups}. For the sake of simplicity, we only show depict two jobs, but this generalizes to any higher number. The evaluation of both setups with regard to the previously defined objectives is summarized in Table \ref{tab:tvm-scaling-setups}.
 
-With default tvm, there are two possible setups
-Include figure with two setups
-Include table with three experiments here
+\begin{figure}
+	\begin{minipage}[b]{.45\textwidth}
+		\centering\includegraphics{scaling_setup_1}
+		\subcaption{Dedicated resources}\label{fig:tvm-scaling-setups-1}
+	\end{minipage}%
+	\hspace{2em}
+	\begin{minipage}[b]{.45\textwidth}
+		\centering\includegraphics{scaling_setup_2}
+		\subcaption{Shared resources}\label{fig:tvm-scaling-setups-2}
+	\end{minipage}
+	\caption{Setups for scaling autotuning}
+	\label{fig:tvm-scaling-setups}
+\end{figure}
 
-1. two completely separate autotuning jobs running independently on additional dedicated servers, one autotuning runner per server
-Pros: good autotuning and inference time, because they don't affect each other
-Cons: Costly because we need multiple sets of the same hardware, bad hardware utilization
-not an economically feasible approach. We cannot simply use machines from a PaaS provider since actual target device needs to be used
-Alternatively, we could use the same server and run them in sequence, trading off hardware required (halved) for autotuning time(doubled)
+\begin{description}
+	\item[Dedicated resources] In the first setup (Figure \ref{fig:tvm-scaling-setups-1}), each job is run on its own set of resources. This means they are completely independent and do not affect each other. Both the resulting inference performance and the autotuning time are as good as possible, since they are equal to single-job autotuning. However, additional resources need to be acquired for every new job, which is not an economically feasible approach on a larger scale. Adding resources on demand from a cloud computing platform such as Amazon EC2 or Azure VM might work for the client machine, but since the actual target device needs to be used for profiling, which is likely to not be available on those cloud platforms, this is not a satisfactory solution. Alternatively to having separate sets of machines, the same machiens could be used to run the jobs in sequence. This trades off the amount of hardware that is required for autotuning time. With a higher number of jobs, this will take too long.
+	\item[Shared resources] In the second setup (Figure \ref{fig:tvm-scaling-setups-2}), all jobs run in parallel on the same resource. To share the target device, we launch one RPC server for each client per GPU in our test setup. Due to the resource sharing, only one set of machines is required, which is good in terms of cost. However, this is very probable to lead to interference, when multiple jobs execute a stage on the same resource simultaneously. Interference has a detrimental effects on both inference performance and autotuning time. Interference on the client will slow down compute-intensive stages like building or model updates (50\%--70\% CPU usage). Modern CPUs are able to parallelize using multiple cores, but because building and model training uses all cores, time-sharing between multiple processes needs to be employed by the kernel. Process idle times and context switching overhead increase the autotuning time considerably. Assigning dedicated CPU cores per job will also make the process slower due to decreased resources per job and will not work when scaling up. Even more critical is interference on the target device. This distorts the profiling results, so good implementations might seem to perform bad if another job profiles on the same target device in parallel. Deceiving measurements will also lead to an inaccurate cost model. Since good inference performance is the prime objective of large-scale autotuning, this setup is also not satisfactory.
+\end{description}
 
-2. two autotuning runners sharing the same server
-Pros: only one set of hardware
-Cons:
-- interference drives up autotuning time
-Explain interference
-Autotuning takes long (in our tests anywhere between 3 and 36 hours, depending on hardware and network size)
-Especially update model takes 64\% longer when two jobs are running simultaneously, very CPU intensive (50-70\%)
-- results in worse inference performance because profiling is distorted (show numbers), as we saw most important
+\begin{table}
+	\newcommand\good[1]{\textcolor{hpe-green}{#1}}
+	\newcommand\bad[1]{\textcolor{hpe-orange}{#1}}
+	\newcommand\heading[1]{\textcolor{white}{\textbf{#1}}}
+	\renewcommand{\arraystretch}{1.2}
+	\sffamily
+	\centering
+	\begin{tabular}{l l l l}
+	\rowcolor{black} \heading{Setup} & \heading{Hardware required} & \heading{Inference performance} & \heading{Autotuning time} \vspace{2pt} \\
+	\textbf{Dedicated resources} & \bad{2x} & \good{High} & \good{Low} \\
+	\textbf{Shared resources} & \good{1x} & \bad{Low} & \bad{High} \\
+	\textbf{Optimum} & \good{1x} & \good{Low} & \good{Low} \\
+	\end{tabular}
+	\caption{Evaluation of setups regarding scalability objectives}
+	\label{tab:tvm-scaling-setups}
+\end{table}
 
-In both setups, we do not meet all objectives
-Gets worse the more jobs we add
-AaaS is not possible efficiently with current implementation and architecture of autotuning in TVM, does not scale well
+Both setups do not meet all objectives we set for large-scale autotuning. Especially when scaling up to more parallel jobs, efficiency deteriorates significantly. We can conclude that the current implementation and architecture of autotuning in TVM does not scale well.
 
-Ideally:
-Prevent interference, because it affects autotuning time and inference performance
-Minimize hardware required by utilizing available hardware fully before adding new servers for cost reasons
-
-However, there does not seem to be any solution yet
+Having regarded possible scaling approaches and the reasons for their benefits and shortcomings, we can formulate two features for an optimal solution to satisfy the objectives:
+\begin{itemize}
+	\item Resources must be shared and utilized fully before adding new servers to minimize the required hardware for cost saving
+	\item Interference must be prevented to guarantee a high inference performance and low autotuning time
+\end{itemize}
 
 \subsection{Similar Problems}
-In general, problem can be formulated as follows:
-How can resources be shared optimally between multiple tasks that are partially idle?
+Our literature review was not successful in finding a solution to scale up autotuning. However, we can generalize the problem statement; we are looking for a solution to share available resources optimally between multiple tasks that are partially idle due to some dependency. From this point of view, we find two papers solving a similar problem.
 
-Add two examples
+\cite{Ma.2005} increases parallelism of a hierarchy of tasks and subtasks on multiprocessor platforms. Subtasks have control and data dependencies, but tasks are independent of each other. They employ a mix of exact and heuristic scheduling algorithms at design-time. Their scheduler interleaves sub-tasks of different tasks while respecting the dependencies between the subtasks of a single task. The result is a 37\% shorter execution time with increased resource utilization. The hierarchical structure of tasks and subtasks is similar to jobs and stages in autotuning.
+
+\cite{Awatramani.2013} enable sharing of \gls{gpu} cores by multiple kernels. In current \gls{gpu} architectures, concurrently launched kernels use separate cores. However, interleaving of code from multiple kernels on the same core allows them to minimize core idle time introduced by memory latency. They increase the throughput of benchmarking applications by 7\%.
+
+\cite{Ma.2005} and \cite{Awatramani.2013} improve parallelism for multiprocessing units while we want to improve parallelism for distributed machines. Nonetheless is the interleaving approach relevant.

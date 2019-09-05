@@ -6,7 +6,7 @@ general idea:
 (1) Share computation resources to minimize idle time by interleaving stages -> use idle time of one job to execute another job.
 Allows us to save on hardware, since we maximize resource utilization
 (2) make sure to keep dependencies and prevent interference, postpone execution of some stages until resource is free
--> ideal solution from previous chapter
+-> ideal solution from previous chapter, also solved resource utilization
 include figure from poster
 
 since only proof-of-concept, very specific to make it work quickly and non-flexible/fault-tolerant
@@ -37,6 +37,12 @@ Necessary for scheduler
 Runner does not do anything on its own but waits for commands
 
 \section{Implementation}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{tvm_resource_utilization_interleaving}%
+	\caption{Interleaved scheduler}
+	\label{fig:interleaving-scheduler}
+\end{figure}
 Figure with autotuning procedure with scheduler
 Since TVM only provides a python interface, we are using python 3.5
 

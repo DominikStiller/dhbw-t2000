@@ -24,8 +24,11 @@
 \usepackage{array}
 \usepackage[outputdir=build]{minted}
 \usepackage{tabularx}
+\usepackage{colortbl}
 \usepackage{makecell}
 \usepackage{csquotes}
+\usepackage{xcolor}
+\usepackage[bottom,hang,flushmargin]{footmisc}
 \usepackage[toc,nonumberlist,acronym,nopostdot]{glossaries}
 \usepackage[
 	backend=biber,
@@ -82,7 +85,7 @@
 			     {1={ ,750},2={ ,500},3={ ,500},4={ ,500},5={ ,500},
 	             6={ ,500},7={ ,600},8={ ,500},9={ ,500},0={ ,500}}
 \SetExtraKerning[unit=space]
-   				{encoding={*}, family={bch}, series={*}, size={footnotesize,small,normalsize}}
+   				{encoding={*}, family={bch}, series={*}, size={notesize,small,normalsize}}
 				{\textendash={400,400}, % en-dash, add more space around it
 	               "28={ ,150}, % left bracket, add space from right
 	               "29={150, }, % right bracket, add space from left
@@ -122,6 +125,11 @@
 \def\abs{\@ifstar{\oldabs}{\oldabs*}}
 \makeatother
 
+% xcolor
+\definecolor{hpe-green}{HTML}{01A982}
+\definecolor{hpe-orange}{HTML}{FF8300}
+
+% Enable ligatures in pdf figures
 \pdfinclusioncopyfonts=1
 
 
@@ -157,3 +165,5 @@
 		[#1]{@{}l@{}}#2
 	\end{tabular}
 }
+
+\newcommand\todo[1]{\textcolor{orange}{#1}}

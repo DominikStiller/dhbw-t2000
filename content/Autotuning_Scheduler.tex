@@ -8,8 +8,6 @@ Our scheduler possesses the two features that have been determined to be imperat
 \end{itemize}
 These two features not only make it match the optimal solution, but also do they solve the problem of bad resource utilization of single-job autotuning by leveraging that shortcoming.
 
-In case multiple jobs are ready, the scheduler needs to decide which one to run. The simplest approach is to use a round-robin algorithm, which iterates over the jobs in the order they were started and picks the first one that is ready. More sophisticated approaches might apply some logic to decide on a job which would maximize resource utilization but keep the average autotuning time low. However, we choose the round-robin algorithm for our first version. It is easy to implement and works reasonably well for an arbitrary number of jobs, which allows us to proof our concept.
-
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth]{tvm_resource_utilization_interleaving}%
@@ -17,7 +15,7 @@ In case multiple jobs are ready, the scheduler needs to decide which one to run.
 	\label{fig:interleaving}
 \end{figure}
 
-Figure \ref{fig:interleaving} illustrates round-robin-based interleaving with an example of two jobs. Significant events are marked with numbers. Job A and Job B are started at the same time, but assume that the scheduler knows first about A. The first stage of A is executed, then the first stage of B. Once B finishes, the round-robin algorithm decides it is A's turn again and executes its second stage. However, a more sophisticated algorithm might have decided that it is better to let B execute first. Once A finishes the seconds stage, the client machine is free and B can execute the second stage. At the same time, A is ready to execute the third stage which will run on the target device. Since the target device is not in use, A can execute the profiling there in parallel to B's building since they use separate resources (\textbf{\textit{1}}). Building does not take as long as profiling, so A is ready to profile before B finishes its profiling stage. Therefore, A's third stage is postponed until the target device is free (\textbf{\textit{2}}). A's profiling and B's update model can, once again, execute simultaneously since they use distinct resources. After one iteration of all four stages, the process starts anew with the first stage (\textbf{\textit{3}}). This continues until both jobs are done. In a real scenario, new jobs might appear while other jobs are already running. The round-robin scheduler simply adds them to its list of jobs and includes them in the interleaving. Note how the resource utilization in Figure \ref{fig:interleaving} is much improved over the single-job autotuning in Figure \ref{fig:tvm-res-util} due to overlapping and sharing. Especially on the client device, utilization has almost been maximized since three of the four stages use the client.\todo{check if is consistent with new scheduler algorithm}
+Figure \ref{fig:interleaving} illustrates round-robin-based interleaving with an example of two jobs. Significant events are marked with numbers. Job A and Job B are started at the same time, but assume that the scheduler knows first about A. The first stage of A is executed, then the first stage of B. Once B finishes, the scheduler decides it is A's turn again and executes its second stage. Once A finishes the seconds stage, the client machine is free and B can execute the second stage. At the same time, A is ready to execute the third stage which will run on the target device. Since the target device is not in use, A can execute the profiling there in parallel to B's building since they use separate resources (\textbf{\textit{1}}). Building does not take as long as profiling, so A is ready to profile before B finishes its profiling stage. Therefore, A's third stage is postponed until the target device is free (\textbf{\textit{2}}). A's profiling and B's update model can, once again, execute simultaneously since they use distinct resources. After one iteration of all four stages, the process starts anew with the first stage (\textbf{\textit{3}}). This continues until both jobs are done. In a real scenario, new jobs might appear while other jobs are already running. The scheduler simply adds them to its list of jobs and includes them in the interleaving. Note how the resource utilization in Figure \ref{fig:interleaving} is much improved over the single-job autotuning in Figure \ref{fig:tvm-res-util} due to overlapping and sharing. Especially on the client device, utilization has almost been maximized since three of the four stages use the client.\todo{check if is consistent with new scheduler algorithm}
 
 \subsection{Autotuning Decomposition}
 The default autotuning process is monolithic and can be regarded as a blackbox from the outside (Figure \ref{fig:autotuning-decomposition-before}). This means, the autotuning loop can be started, and it does not finish until the whole job is completed. Once a stage finishes, the next one is executed immediately. However, the scheduler needs to be able to control the execution of the individual stages because it needs to prevent interference by means of delayed execution. This necessitates the decomposition of the autotuning process into schedulable units, corresponding to the stages  (Figure \ref{fig:autotuning-decomposition-after}). The client does not execute any of the stages on its own. Rather, it provides an interface to execute schedulable units and waits for an external trigger to do so. The autotuning loop can now run in another component, such as the scheduler.
@@ -45,7 +43,9 @@ To fulfill the task of interleaving while preventing interference, the scheduler
 \end{itemize}
 We call this \textit{load-awareness}; being aware of the state of jobs and resources as well as their relationships. Theoretically, this allows the scheduler to work not only with TVM's autotuning but any process that can provide this information. Designing our scheduler to be agnostic of the underlying process also simplifies the algorithm.
 
-We present the algorithm for interleaved scheduling in Listing \ref{lst:sched-algo-interleaving}. Each job exposes an interface that provides the four pieces of information necessary for scheduling. The scheduler keeps a list of jobs in the order in which they were registered. Furthermore, it keeps a list of resources which are marked as free or busy. Each resource also has a queue which contains stages that are ready and will use that resource (Line 1). The algorithm is an infinite loop (Line 2), with each iteration consisting of two phases: scheduling and execution. In the first phase, the scheduler checks for each job if the current stage is done (Lines 4--5). Busy jobs are not regarded further. If the stage is done, the resource that was used is marked as free (Line 6). If the stage was the last stage in the job, the job can be removed from the list of jobs (Line 7--8). Otherwise, the job is ready to continue and the next stage is added to the queue of the resource that it will run on (Line 9--10). The iteration over all jobs in order is what effectively makes this round-robin scheduling. In the second phase, the scheduler iterates over each resource and the corresponding queue (Line 12). If the resource is free and there are pending stages for that resource, the first stage in the queue is dequeued and executed (Lines 13--15). The respective resource needs to be marked as busy (Line 16).
+In case multiple jobs are ready to execute a stage, the scheduler needs to decide which one to run. The simplest approach is to use a round-robin algorithm, which iterates over the jobs in the order they were started and picks the first one that is ready. More sophisticated approaches might apply some logic to decide on a job which would maximize resource utilization but keep the average autotuning time low. However, we choose the round-robin algorithm for our first version. It is easy to implement and works reasonably well for an arbitrary number of jobs, which allows us to proof our concept.
+
+We present the algorithm for interleaved scheduling in Listing \ref{lst:sched-algo-interleaving}. Each job is controlled using an interface that provides the four pieces of information necessary for scheduling. The scheduler keeps a list of jobs in the order in which they were registered. Furthermore, it keeps a list of resources which are marked as free or busy. Each resource also has a queue which contains stages that are ready and will use that resource (Line 1). The algorithm is an infinite loop (Line 2), with each iteration consisting of two phases: scheduling and execution. In the first phase, the scheduler checks for each job if the current stage is done (Lines 4--5). Busy jobs are not regarded further. If the stage is done, the resource that was used is marked as free (Line 6). If the stage was the last stage in the job, the job can be removed from the list of jobs (Line 7--8). Otherwise, the job is ready to continue and the next stage is added to the queue of the resource that it will run on (Line 9--10). The iteration over all jobs in order is what effectively makes this round-robin scheduling. In the second phase, the scheduler iterates over each resource and the corresponding queue (Line 12). If the resource is free and there are pending stages for that resource, the first stage in the queue is dequeued and executed (Lines 13--15). The respective resource needs to be marked as busy (Line 16).
 
 \begin{listing}
 \begin{pythoncode}
@@ -73,7 +73,7 @@ while True:
 
 Additionally to interleaving, our scheduler supports two other strategies for executing multiple jobs, which will be used in the evaluation for comparison.
 
-Sequential scheduling (Listing \ref{lst:sched-algo-sequential}) works similar to single-job autotuning without a scheduler. Jobs do not run in parallel, but the next job is only started when the previous one finishes. This renders consideration of resource free/busy state unnecessary, and stages do not need to be postponed. However, since it is controlled by the scheduler, we can calculate the overhead introduced by adding a scheduler component.
+Sequential scheduling (Listing \ref{lst:sched-algo-sequential}) works similar to single-job autotuning without a scheduler. Jobs do not run in parallel, but the next job is only started when the previous one finishes. This renders consideration of resource free/busy state unnecessary, and stages do not need to be postponed. However, since it is controlled by the scheduler, we can calculate the overhead introduced by adding a scheduler component, e.g., due to communication between scheduler and client or scheduling itself.
 
 \begin{listing}
 \begin{pythoncode}
@@ -111,27 +111,42 @@ while True:
 \label{lst:sched-algo-synchronous}
 \end{listing}
 
+\subsection{Autotuning Process}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{tvm_autotuning_with_scheduler.pdf}%
+	\caption{Autotuning process with scheduler}
+	\label{fig:tvm-autotuning-with-scheduler}
+\end{figure}
+
+Figure \ref{fig:tvm-autotuning-with-scheduler} shows the autotuning process with our scheduler (compare with scheduler-less, single-job autotuning in Figure \ref{fig:tvm-autotuning}). There are two discrete control flows at work. The per-job autotuning control flow is the same as before, spanning client and target machines. The scheduling control flow is on a higher level incorporating multiple jobs, and spans schedulers and clients. A new job needs to be made known to the scheduler first so it can consider the job in scheduling. One client is responsible for running exactly one job, registering that job with the scheduler when launching. The client is then ready to receive control commands to execute individual stages. The client exposes the interface which is required by the scheduling algorithm while calling the respective TVM methods internally. Clients can share target devices since the scheduler prevents interference of the profiling stages of multiple jobs on the same resource. The normal autotuning process is then executed, however not in one monolithic step, but stage for stage, enabled by the decomposition. Possibly there are some waiting times between stages introduces by postponing.
+
+In multi-client scenarios, the cost model of each client is initialized by transfer learning from the global autotuning database on the client machine, which contains data from all jobs that have previously been executed on that machine. During autotuning, measurement results are written into a job-specific database which is merged back into the global database when the job is complete.
+
 \section{Implementation}
-Figure with autotuning procedure with scheduler
-Since TVM only provides a python interface, we are using python 3.5
+Since TVM provides the API for autotuning in Python only, we use Python 3.6 for our implementation. It is intended as a proof of concept which we want to develop rapidly to see if the interleaving scheduler delivers the expected results. Therefore, we create an implementation that does not offer much flexibility or fault tolerance. However, it is sufficient to perform experiments in our test environment. The scheduler implementation is built on top of SimpleTVM for interfacing with TVM's autotuning.
 
-since only proof-of-concept, very specific to make it work quickly and non-flexible/fault-tolerant
-Leverage SimpleTVM
-only supports one client server and target device server at the moment
-
-
-\subsection{RPC}
-We want clients to live in different processes, docker containers, possibly physical servers (why?)
-requires RPC infrastructure consisting of scheduler and clients
-different from TVM RPC infrastructure
-clients register to scheduler
-describe endpoints
+For the beginning, only a single client machine is supported, but an arbitrary number of clients can run on it. Multiple target devices can be utilized for profiling, but the scheduler regards all target devices as a single resource. This coarse granularity is another decision to facilitate simple implementation.
 
 \subsection{Components}
 Show whole stack, denote what happens in scheduler, what happens in runner
 Show which communication is in-process and which is RPC
 JobManager negotiates between autotuning stages interface and simple scheduler interface, keeps track at position in autotuning
 show abstract scheduler and client interface
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{scheduler_layers}%
+	\caption{Layers and components of scheduler implementation}
+	\label{fig:scheduler_layers}
+\end{figure}
+
+\subsection{RPC}
+Scheduler and clients live in different processes, usually even separate containers or physical servers. While the autotuning control flow already exists in form of in-process method calls and \gls{rpc} for remote profiling, the scheduling control flow requires its own \gls{rpc} infrastructure to enable communication between the scheduler and the clients. We create a simple HTTP-based \gls{rpc} protocol which supports exactly the interface required by scheduling.
+
+Both scheduler and client act as HTTP server and client.
+
+retry with exponential backoff
 
 \subsection{Challenges}
 initially wanted to run scheduler and clients in one multi-threaded process without RPC to get results quickly

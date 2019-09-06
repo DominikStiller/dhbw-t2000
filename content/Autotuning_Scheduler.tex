@@ -17,31 +17,99 @@ In case multiple jobs are ready, the scheduler needs to decide which one to run.
 	\label{fig:interleaving}
 \end{figure}
 
-Figure \ref{fig:interleaving} illustrates round-robin-based interleaving with an example of two jobs. Significant events are marked with numbers. Job A and Job B are started at the same time, but assume that the scheduler knows first about A. The first stage of A is executed, then the first stage of B. Once B finishes, the round-robin algorithm decides it is A's turn again and executes its second stage. However, a more sophisticated algorithm might have decided that it is better to let B execute first. Once A finishes the seconds stage, the client machine is free and B can execute the second stage. At the same time, A is ready to execute the third stage which will run on the target device. Since the target device is not in use, A can execute the profiling there in parallel to B's building since they use separate resources (\textbf{\textit{1}}). Building does not take as long as profiling, so A is ready to profile before B finishes its profiling stage. Therefore, A's third stage is postponed until the target device is free (\textbf{\textit{2}}). A's profiling and B's update model can, once again, execute simultaneously since they use distinct resources. After one iteration of all four stages, the process starts anew with the first stage (\textbf{\textit{3}}). This continues until both jobs are done. In a real scenario, new jobs might appear while other jobs are already running. The round-robin scheduler simply adds them to its list of jobs and includes them in the interleaving. Note how the resource utilization in Figure \ref{fig:interleaving} is much improved over the single-job autotuning in Figure \ref{fig:tvm-res-util} due to overlapping and sharing. Especially on the client device, utilization has almost been maximized since three of the four stages use the client.
-
-\subsection{Scheduling Algorithm}
-to keep scheduler algorithm simple, we designed it to be agnostic of stages
-scheduler needs to know
-- knows which job will use which resource
-- knows which resource is currently available
-we call this load-aware
-theoretically, could work for any application that supports this interface (e.g. TC?)
-
-allows for variable strategies to compare different designs
-show scheduling pseudocode
+Figure \ref{fig:interleaving} illustrates round-robin-based interleaving with an example of two jobs. Significant events are marked with numbers. Job A and Job B are started at the same time, but assume that the scheduler knows first about A. The first stage of A is executed, then the first stage of B. Once B finishes, the round-robin algorithm decides it is A's turn again and executes its second stage. However, a more sophisticated algorithm might have decided that it is better to let B execute first. Once A finishes the seconds stage, the client machine is free and B can execute the second stage. At the same time, A is ready to execute the third stage which will run on the target device. Since the target device is not in use, A can execute the profiling there in parallel to B's building since they use separate resources (\textbf{\textit{1}}). Building does not take as long as profiling, so A is ready to profile before B finishes its profiling stage. Therefore, A's third stage is postponed until the target device is free (\textbf{\textit{2}}). A's profiling and B's update model can, once again, execute simultaneously since they use distinct resources. After one iteration of all four stages, the process starts anew with the first stage (\textbf{\textit{3}}). This continues until both jobs are done. In a real scenario, new jobs might appear while other jobs are already running. The round-robin scheduler simply adds them to its list of jobs and includes them in the interleaving. Note how the resource utilization in Figure \ref{fig:interleaving} is much improved over the single-job autotuning in Figure \ref{fig:tvm-res-util} due to overlapping and sharing. Especially on the client device, utilization has almost been maximized since three of the four stages use the client.\todo{check if is consistent with new scheduler algorithm}
 
 \subsection{Autotuning Decomposition}
-Necessary step before implementation
-Show figure
-Default TVM:
-Procedure is monolithic
-Start runner and loop does not stop until its finished
-We want to be able to control the execution of individual stages
+The default autotuning process is monolithic and can be regarded as a blackbox from the outside (Figure \ref{fig:autotuning-decomposition-before}). This means, the autotuning loop can be started, and it does not finish until the whole job is completed. Once a stage finishes, the next one is executed immediately. However, the scheduler needs to be able to control the execution of the individual stages because it needs to prevent interference by means of delayed execution. This necessitates the decomposition of the autotuning process into schedulable units, corresponding to the stages  (Figure \ref{fig:autotuning-decomposition-after}). The client does not execute any of the stages on its own. Rather, it provides an interface to execute schedulable units and waits for an external trigger to do so. The autotuning loop can now run in another component, such as the scheduler.
 
-Decompose monolith into separate units for stages
-This allows us to control when which stage is being executed
-Necessary for scheduler
-Runner does not do anything on its own but waits for commands
+\begin{figure}
+	\begin{minipage}[b]{.5\textwidth}
+		\centering\includegraphics{autotuning_decomposition_before}
+		\subcaption{Before decomposition}\label{fig:autotuning-decomposition-before}
+	\end{minipage}%
+	\begin{minipage}[b]{.5\textwidth}
+		\centering\includegraphics{autotuning_decomposition_after}
+		\subcaption{After decomposition}\label{fig:autotuning-decomposition-after}
+	\end{minipage}
+	\caption{Client interface before and after decomposition}
+	\label{fig:autotuning-decomposition}
+\end{figure}
+
+\subsection{Scheduling Algorithm}
+To fulfill the task of interleaving while preventing interference, the scheduler needs to know four pieces of information for every job:
+\begin{itemize}
+	\item Whether the current stage is done; lets scheduler know if the job is ready for next stage
+	\item Whether the whole job is done; lets scheduler know if the job needs to be considered in the future
+	\item Which resource the current stage runs on; lets scheduler know which resources are free and which are in use
+	\item Which resource the next stage will run on; lets scheduler postpone stage execution to prevent interference
+\end{itemize}
+We call this \textit{load-awareness}; being aware of the state of jobs and resources as well as their relationships. Theoretically, this allows the scheduler to work not only with TVM's autotuning but any process that can provide this information. Designing our scheduler to be agnostic of the underlying process also simplifies the algorithm.
+
+We present the algorithm for interleaved scheduling in Listing \ref{lst:sched-algo-interleaving}. Each job exposes an interface that provides the four pieces of information necessary for scheduling. The scheduler keeps a list of jobs in the order in which they were registered. Furthermore, it keeps a list of resources which are marked as free or busy. Each resource also has a queue which contains stages that are ready and will use that resource (Line 1). The algorithm is an infinite loop (Line 2), with each iteration consisting of two phases: scheduling and execution. In the first phase, the scheduler checks for each job if the current stage is done (Lines 4--5). Busy jobs are not regarded further. If the stage is done, the resource that was used is marked as free (Line 6). If the stage was the last stage in the job, the job can be removed from the list of jobs (Line 7--8). Otherwise, the job is ready to continue and the next stage is added to the queue of the resource that it will run on (Line 9--10). The iteration over all jobs in order is what effectively makes this round-robin scheduling. In the second phase, the scheduler iterates over each resource and the corresponding queue (Line 12). If the resource is free and there are pending stages for that resource, the first stage in the queue is dequeued and executed (Lines 13--15). The respective resource needs to be marked as busy (Line 16).
+
+\begin{listing}
+\begin{pythoncode}
+queues = {r: [] for r in resources}
+while True:
+    # Phase 1: Round-robin scheduling
+    for job in jobs:
+        if job.is_stage_done():
+            mark_as_free(job.previous_resource)
+            if job.is_complete():
+                jobs.remove(job)
+            else:
+                queues[job.next_resource].enqueue(job.next_stage)
+    # Phase 2: Execution
+    for resource, queue in queues:
+        if is_free(resource) and len(queue) > 0:
+            stage = queue.dequeue()
+            stage.execute()
+            mark_as_busy(resource)
+\end{pythoncode}
+\unskip
+\caption{Interleaved scheduling pseudocode}
+\label{lst:sched-algo-interleaving}
+\end{listing}
+
+Additionally to interleaving, our scheduler supports two other strategies for executing multiple jobs, which will be used in the evaluation for comparison.
+
+Sequential scheduling (Listing \ref{lst:sched-algo-sequential}) works similar to single-job autotuning without a scheduler. Jobs do not run in parallel, but the next job is only started when the previous one finishes. This renders consideration of resource free/busy state unnecessary, and stages do not need to be postponed. However, since it is controlled by the scheduler, we can calculate the overhead introduced by adding a scheduler component.
+
+\begin{listing}
+\begin{pythoncode}
+while True:
+    job = jobs.next()
+    if not job:
+        continue
+
+    while not job.is_complete():
+        if job.is_stage_done():
+            job.next_stage.execute()
+    jobs.remove(job)
+\end{pythoncode}
+\unskip
+\caption{Sequential scheduling pseudocode}
+\label{lst:sched-algo-sequential}
+\end{listing}
+
+Synchronous scheduling (Listing \ref{lst:sched-algo-synchronous}) forces parallel execution of the same stage of multiple jobs on the same resource, making it the exact opposite of interleaved scheduling. Postponed stage execution is applied here to guarantee full interference. We use this strategy to evaluate the worst case effect of interference. However, this only works for equal jobs, since there needs to be symmetry between stages of all jobs.
+
+\begin{listing}
+\begin{pythoncode}
+while True:
+    current_jobs = jobs
+    if len(current_jobs) < 2:
+        continue
+
+    while not any([j.is_complete() for j in current_jobs]):
+        if all([j.is_stage_done() for j in current_jobs]):
+            [j.next_stage.execute() for j in current_jobs]
+    jobs.remove_all(current_jobs)
+\end{pythoncode}
+\unskip
+\caption{Synchronous scheduling pseudocode}
+\label{lst:sched-algo-synchronous}
+\end{listing}
 
 \section{Implementation}
 Figure with autotuning procedure with scheduler
@@ -49,6 +117,7 @@ Since TVM only provides a python interface, we are using python 3.5
 
 since only proof-of-concept, very specific to make it work quickly and non-flexible/fault-tolerant
 Leverage SimpleTVM
+only supports one client server and target device server at the moment
 
 
 \subsection{RPC}

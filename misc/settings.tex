@@ -9,6 +9,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
 
+%\usepackage{showframe}
 \usepackage{tocloft}
 \usepackage{chngcntr}
 \usepackage{amsmath}
@@ -154,7 +155,15 @@
 % Custom Commands
 %----------------------------------------------------------------------------
 
-\newcommand*{\vcenteredhbox}[1]{
+\newcommand*{\vcenteredhboxleft}[1]{
+	\raggedright
+	\begingroup
+	\setbox0=\hbox{#1}\parbox{\wd0}{\box0}
+	\endgroup
+}
+
+\newcommand*{\vcenteredhboxright}[1]{
+	\raggedleft
 	\begingroup
 	\setbox0=\hbox{#1}\parbox{\wd0}{\box0}
 	\endgroup

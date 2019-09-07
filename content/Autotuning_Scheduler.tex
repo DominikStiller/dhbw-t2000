@@ -3,7 +3,7 @@ Interleaving of the stages of multiple jobs is our key concept for enabling larg
 \section{Design}
 Our scheduler possesses the two features that have been determined to be imperative for optimal large-scale autotuning:
 \begin{itemize}
-	\item Computation resources are shared between jobs. This facilitates good resource utilization since the idle time of one job can be leveraged to execute another job. This is called \textit{interleaving} and saves hardware and costs as a result. However, stage dependencies of a single job must be maintained.
+	\item Computation resources are shared between jobs. This facilitates good resource utilization since the idle time of one job can be harnessed to execute another job. This is called \textit{interleaving} and saves hardware and costs as a result. However, stage dependencies of a single job must be maintained.
 	\item Interference between jobs is prevented. This guarantees that inference performance and autotuning time are as good as possible. The scheduler needs to check if the resource that will be used by the next stage is free before execution. This might necessitate the postponing of stage executions if the stage is ready before the resource becomes free.
 \end{itemize}
 These two features not only make it match the optimal solution, but also do they solve the problem of bad resource utilization of single-job autotuning by leveraging that shortcoming.
@@ -41,7 +41,7 @@ To fulfill the task of interleaving while preventing interference, the scheduler
 	\item Which resource the current stage runs on; lets scheduler know which resources are free and which are in use
 	\item Which resource the next stage will run on; lets scheduler postpone stage execution to prevent interference
 \end{itemize}
-We call this \textit{load-awareness}; being aware of the state of jobs and resources as well as their relationships. Theoretically, this allows the scheduler to work not only with TVM's autotuning but any process that can provide this information. Designing our scheduler to be agnostic of the underlying process also simplifies the algorithm.
+We call this \textit{load-awareness}; being aware of the state of jobs and resources as well as their relationships. Theoretically, this allows the scheduler to work not only with TVM's autotuning but any process that can provide this information. Designing our scheduler to be agnostic of the underlying process also simplifies the algorithm since no state of this process, i.e. the progress or position in the loop, needs to be considered.
 
 In case multiple jobs are ready to execute a stage, the scheduler needs to decide which one to run. The simplest approach is to use a round-robin algorithm, which iterates over the jobs in the order they were started and picks the first one that is ready. More sophisticated approaches might apply some logic to decide on a job which would maximize resource utilization but keep the average autotuning time low. However, we choose the round-robin algorithm for our first version. It is easy to implement and works reasonably well for an arbitrary number of jobs, which allows us to proof our concept.
 
@@ -57,7 +57,7 @@ while True:
             mark_as_free(job.previous_resource)
             if job.is_complete():
                 jobs.remove(job)
-            else:
+            elif not job.next_stage in queues[job.next_resource]:
                 queues[job.next_resource].enqueue(job.next_stage)
     # Phase 2: Execution
     for resource, queue in queues:
@@ -121,6 +121,8 @@ while True:
 
 Figure \ref{fig:tvm-autotuning-with-scheduler} shows the autotuning process with our scheduler (compare with scheduler-less, single-job autotuning in Figure \ref{fig:tvm-autotuning}). There are two discrete control flows at work. The per-job autotuning control flow is the same as before, spanning client and target machines. The scheduling control flow is on a higher level incorporating multiple jobs, and spans schedulers and clients. A new job needs to be made known to the scheduler first so it can consider the job in scheduling. One client is responsible for running exactly one job, registering that job with the scheduler when launching. The client is then ready to receive control commands to execute individual stages. The client exposes the interface which is required by the scheduling algorithm while calling the respective TVM methods internally. Clients can share target devices since the scheduler prevents interference of the profiling stages of multiple jobs on the same resource. The normal autotuning process is then executed, however not in one monolithic step, but stage for stage, enabled by the decomposition. Possibly there are some waiting times between stages introduces by postponing.
 
+Scheduler and clients live in different processes, usually even separate containers or physical servers. While the autotuning control flow already exists in form of in-process method calls and \gls{rpc} for remote profiling, the scheduling control flow requires its own \gls{rpc} infrastructure to enable communication between the scheduler and the clients.
+
 In multi-client scenarios, the cost model of each client is initialized by transfer learning from the global autotuning database on the client machine, which contains data from all jobs that have previously been executed on that machine. During autotuning, measurement results are written into a job-specific database which is merged back into the global database when the job is complete.
 
 \section{Implementation}
@@ -129,40 +131,115 @@ Since TVM provides the API for autotuning in Python only, we use Python 3.6 for 
 For the beginning, only a single client machine is supported, but an arbitrary number of clients can run on it. Multiple target devices can be utilized for profiling, but the scheduler regards all target devices as a single resource. This coarse granularity is another decision to facilitate simple implementation.
 
 \subsection{Components}
-Show whole stack, denote what happens in scheduler, what happens in runner
-Show which communication is in-process and which is RPC
-JobManager negotiates between autotuning stages interface and simple scheduler interface, keeps track at position in autotuning
-show abstract scheduler and client interface
+The implementation of our scheduler is distributed over multiple components. Same-machine components interact via in-process method calls, but \gls{rpc} is required for cross-machine calls. We created a simple HTTP-based \gls{rpc} protocol to support communication between scheduler and clients, with both scheduler and client acting as HTTP server and client. However, the protocol is very specific to the required interface and not general-purpose. If requests fail, they are retried three times with exponential backoff.
 
-\begin{figure}[ht]
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth]{scheduler_layers}%
 	\caption{Layers and components of scheduler implementation}
-	\label{fig:scheduler_layers}
+	\label{fig:scheduler-layers}
 \end{figure}
 
-\subsection{RPC}
-Scheduler and clients live in different processes, usually even separate containers or physical servers. While the autotuning control flow already exists in form of in-process method calls and \gls{rpc} for remote profiling, the scheduling control flow requires its own \gls{rpc} infrastructure to enable communication between the scheduler and the clients. We create a simple HTTP-based \gls{rpc} protocol which supports exactly the interface required by scheduling.
+The components act as layers of abstraction sitting on top of TVM to eventually hook into the actual autotuning process. Figure \ref{fig:scheduler-layers} shows the whole stack including method interfaces. We look closer at each component, from top to bottom.
+\begin{description}
+	\item[Scheduler] The \pythoninline/Scheduler/ implements the interleaved scheduling algorithm from Listing \ref{lst:sched-algo-interleaving} as well as the sequential and synchronous strategies. The strategy can be specified when starting the scheduler. Instead of a list of jobs as in the algorithm, the scheduler actually keeps a list of the clients which run those jobs. The scheduler provides an \gls{rpc} interface for the client to register (not depicted in the figure) and will keep a reference to that client to enable controlling of its autotuning job. Additionally, some error handling is added to, e.g., remove clients if they become unreachable. Resource state is implemented in a resource--to--boolean dictionary, indicating if a given resource is free.
+	\item[ClientStub] The \pythoninline/ClientStub/ does not perform any functionality on its own, rather it acts as an abstraction of the \pythoninline/Client/'s \gls{rpc} interface so the scheduler can call client methods as if they were an in-process object, allowing for a clean implementation of the scheduling algorithms. The \pythoninline/ClientStub/ passes through calls to the actual \pythoninline/Client/ but handles \gls{rpc} including serialization/deserialization of variables and error handling.
+	\item[Client] The \pythoninline/Client/ provides the interface that is required by the scheduler to control jobs. It registers with the scheduler upon launch and exposes three methods via \gls{rpc}:
+	\begin{itemize}
+		\item \pythoninline/get_next_resource/ returns the resource that the next stage will run on, or \pythoninline/None/ if the job is complete, effectively combining two functionalities into one method. Furthermore, if the job is complete, the client shuts down after sending the \gls{rpc} response.
+		\item \pythoninline/execute_next_stage/ calls the function for the next stage asynchronously and keeps a reference to the stage's thread in form of a future. If another stage is currently running, this methods fails.
+		\item \pythoninline/is_stage_done/ returns a boolean, denoting if the stage that was previously executed using \pythoninline/execute_next_stage/ has finished. If no stage has been executed yet or the future indicates that the stage's thread has terminated,  \pythoninline/True/ is returned,  \pythoninline/False/ otherwise.
+	\end{itemize}
+	\item[JobManager] The \pythoninline/JobManager/ is responsible for negotiating between the simple resource- and stage-based interface required by the scheduler and the more complex interface of TVM's autotuning. This conversion from a stateless to a stateful interface requires that the \pythoninline/JobManager/ keep track of the current progress of the autotuning process, i.e. the position in the autotuning loop identified by task and stage. Effectively, it decides the order of stages in the loop, when the loop starts again, and when the loop terminates. This allows it to implement two methods: \pythoninline/get_next_resource/ is called directly by the client to get the resource that the next stage will run on, \pythoninline/get_next_stage/ returns a method containing the stage functionality which is executed by the client's \pythoninline/execute_next_stage/.\\
+	The logic by which the next stage is decided in \pythoninline/get_next_stage/ is presented in Listing \ref{lst:stage-decision-algo}. \pythoninline/get_next_resource/ follows a similar logic but returns the resource instead of methods. The job's state is determined by flags indicating if the job has been initialized and finalized as well as the current task and stage in that task (Lines 1--2). If the job has not been initialized, the initialization method is returned and the \pythoninline/initialized/ flag is set (Lines 4--6). Then, the autotuning loop for the first task is started. With each call of \pythoninline/get_next_stage/, \pythoninline/current_stage/ is incremented and the respective stage's method is returned (Lines 8--22). The stage methods come from either the \pythoninline/Job/ or the decomposed TVM autotuning API. At the end of one loop iteration, which corresponds to one batch, the \pythoninline/current_stage/ is set to the first stage of the loop (Line 21). If the current batch was the last batch of the task (because either the search space has been exhausted or the specified number of trials has been reached), \pythoninline/current_task/ is incremented and \pythoninline/current_stage/ is reset to the task initialization so autotuning can commence for the next task (Lines 15--18). If all tasks have completed, the autotuning job is done (Line 7). Next comes the job finalization method (Lines 23--25), after which \pythoninline/None/ is always returned (Line 26).
+\begin{listing}[h]
+\begin{pythoncode}
+initialized = finalized = False
+current_task = current_stage = 0
 
-Both scheduler and client act as HTTP server and client.
+if not initialized:
+    initialized = True
+    return initialize_job_fn
+elif current_task < number_of_tasks:
+    current_stage += 1
+    if   current_stage == 1: return initialize_task_fn
+    elif current_stage == 2: return select_batch_fn
+    elif current_stage == 3: return build_fn
+    elif current_stage == 4: return profile_fn
+    elif current_stage == 5: return update_model_fn
+    elif current_stage == 6:
+        if last_batch:
+            # Go to next task
+            current_task += 1
+            current_stage = 0
+        else:
+            # Go to select batch stage
+            current_stage = 1
+        return finish_batch_fn
+elif not finalized:
+    finalized = True
+    return finalize_job_fn
+else: return None
+\end{pythoncode}
+\unskip
+\caption[{Pseudocode of JobManager's stage decision logic}]{Pseudocode of \pythoninline/JobManager/'s stage decision logic}
+\label{lst:stage-decision-algo}
+\end{listing}
+	\item[Job] The \pythoninline/Job/ is an abstract class which acts as interface specification for \pythoninline/TVMJob/ and \pythoninline/MockJob/. Jobs contain a collection of tasks as well as the initialization and finalization methods used by the \pythoninline/JobManager/.
+	\item[TVMJob] The \pythoninline/TVMJob/ represents one autotuning job. It only passes calls through to \pythoninline/SimpleTVM/ which contains the implementations. The initialization method only stores a timestamp of the autotuning begin for measurement. The finalization method collects error and time statistics from the autotuning process and inserts them into the benchmarking context. Additionally, it merges the job-specific autotuning database with the global database. The collection of tasks is extracted using a method from TVM, but modified slightly by SimpleTVM.
+	\item[MockJob] A \pythoninline/MockJob/ is a drop-in replacement for \pythoninline/TVMJob/, exposing the same interface but not running actual autotuning, which is a slow process. Rather, it simulates work by sleeping and prints to the console when stages are started and finished. This allows rapid debugging of the scheduler algorithms because no infrastructure like servers and the tracker need to be set up. The number of batches and tasks can be specified, as well as a time stretch factor to slow down or speed up the simulated work. The mock stages proportions are about the same as in real autotuning, e.g., profiling takes longer than building. It does not depend on any other components such as TVM.
+\end{description}
 
-retry with exponential backoff
+\todo{JobManagerv2} but rename
+
+\subsection{Usage}
+Switching from scheduler-less default autotuning to scheduled autotuning is trivial if the former is already being used, as shown in Listing \ref{lst:simpletvm-flow-with-scheduler}. Creation of the \pythoninline/SimpleTVM/ object and import of the model is identical for both variants (Lines 1--2). Default autotuning is started by calling the appropriate method directly with the autotuning options such as number of trials or profiling timeout (Line 5). For scheduled autotuning, a \pythoninline/TVMJob/ needs to be created first (Line 8). A client for the job is then started with the host names of the client and scheduler machines as parameters (Line 9). After autotuning, the optimized module can be built, saved and evaluated as usual (compare Listing \ref{lst:simpletvm-flow}).
+\begin{listing}[h]
+\begin{pythoncode}
+tvm = SimpleTVM(BenchmarkingContext('gpu'), rpc_tracker=('tracker', 9190))
+tvm.from_model('resnet')
+
+# Scheduler-less
+tvm.autotune(options)
+
+# Scheduled
+job = TVMJob(tvm, options)
+Client(job, client_host='client', scheduler_host='scheduler').start()
+\end{pythoncode}
+\unskip
+\caption{Comparison of default and scheduled autotuning}
+\label{lst:simpletvm-flow-with-scheduler}
+\end{listing}
 
 \subsection{Challenges}
-initially wanted to run scheduler and clients in one multi-threaded process without RPC to get results quickly
-not possible due to python global interpreter lock
+For our very first prototype, we wanted all components to run in a single multi-threaded process, so we could evaluate our approach quickly without having to implement the \gls{rpc} protocol. However, Python does not support true multi-threading due to the global interpreter lock. This lock simplifies memory management for the interpreter but only one thread can execute code at a time because of it. Python's recommended replacement is launching other interpreter processes from within the code, however this requires serialization of objects for inter-process communication. However, the nested classes and passing around of methods that are created inside other methods caused problems with this serialization. That is why our first prototype took longer to create than expected because we had to implement \gls{rpc} before the actual scheduler.
 
-evaluation of design choices takes long because autotuning is a slow process, created MockJob for debugging of scheduler
+Since multi-job autotuning with a scheduler requires setup of all components and is rather slow, we created the \pythoninline/MockJob/ class for improved debugging and testing of the scheduler functionality. This allows us to evaluate design choices in the scheduling algorithm much more rapidly. Moreover, the isolation from TVM narrows the room for errors to facilitate focus on scheduler issues without being disrupted by problems caused by autotuning.
 
 \section{Autotuning as a Service}
-imagine autotuning as a service where users can submit their trained model and receive an optimized version according to SLA
-Describe as a service
-More sophisticated scheduler, requires moving more autotuning logic from client to scheduler
-Make client stateless
+Setting up the multi-job autotuning infrastructure is cumbersome because a lot of components need to be configured and deployed, a lot of it imperatively in code. Additionally, provisioning of new client and target machines is not done automatically by the scheduler, which limits the scale at which autotuning can be performed. This motivates the need for an \gls{aaas} platform, which hides the complexity of building and maintaining the infrastructure and thus simplifies the application of autotuning, opening up the opportunities of autotuning for any developer of \gls{dl}-based software.
 
-Keep trained model and update it every n new entries to skip transfer learning time for every task
-Check currently known best configurations and see if SLA is already met before actually starting autotuning
-Automatically set up autotuning infrastructure
-Split jobs on task and search space level to parallelize more
-- make better use of unused resources
-- faster autotuning, e.g. for paying customers
+We imagine a solution that allows users to submit their trained model and a declarative specification, including information such as a target inference time to meet service-level agreements and the target device type such as specialized accelerators. The platform then automatically sets up the required machines and components, runs the autotuning process until the user's target inference time is achieved (or no further optimization is possible), then the optimized version is returned to the user. To this end, we propose a reference architecture. However, we do not implement the platform. \cite{Cho.2019} shows how the Kubernetes container management system could be harnessed for resource provisioning in an \gls{aaas} platform, with a prototype delivering promising results. Our architecture builds on top of such a system, however it does not prescribe any specific product.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{aaas_architecture}%
+	\caption{Autotuning as a Service reference architecture}
+	\label{fig:aaas-architecture}
+\end{figure}
+
+Figure \ref{fig:aaas-architecture} shows our proposed architecture. Users can submit their jobs including the model and specification through the portal. First the portal inserts that job information in the job database, after which it notifies the orchestrator about the new job. The orchestrator decides if the existing resources are sufficient, or if the client and target device cluster need to be scaled up, e.g., by booting new server instances on a cloud computing platform. The cluster controller, e.g., a Kubernetes Master, executes the scaling. Then, the client is created on a client machine and the job is registered with the scheduler.
+The scheduler now controls the autotuning jobs as described in the previous sections. However, the actual client functionality changes in the \gls{aaas} scenario. The cost model is extracted to a central server that all clients share, so neither a local cost model nor a job-specific autotuning database is necessary. The cost model server keeps a separate model for every target device. Furthermore, the client does not request profiling servers from a tracker, but the target devices are explicitly assigned per profiling stage by the scheduler. Profiling results are not returned to the client, but inserted into a global profiling database, which the cost model server uses to update the models periodically. Clients store their state in the job database as opposed to the JobManager object, which makes the clients stateless so they can resume the job in case of failure. This also allows the user to monitor autotuning progress through the portal. Once a job has completed, the resulting optimized TVM module is stored in the job database and the user can download it for deployment in his application.
+
+Additionally, we make propose to increase autotuning speed. Firstly, before starting the autotuning, inference performance of a newly submitted model is checked with the existing best configurations. If the user's specifications are already met, no job needs to be launched. Secondly, jobs can be parallelized by splitting them into multiple jobs. Jobs consist of a set of tasks that are independent of each other. Moreover, the search space of each task can be divided to split one task into multiple. Leveraging task-level and search space-level splitting, autotuning can be accelerated if users request a higher number of resource be allocated to them. Furthermore, unused resources can be used better if the total platform load is low.
+
+One limitation of \gls{aaas} over on-premise autotuning infrastructure is the set of supported target devices types. The platform can provide support for common accelerators, but if more exotic or novel hardware is desired, \gls{aaas} will fall short. One solution would be to support profiling on devices outside of the target device cluster. However, appropriate security measures would need to be taken.
+
+In summary, the \gls{aaas} platform makes four important changes to the existing multi-job, scheduled autotuning architecture:
+\begin{itemize}
+	\item User-friendly portal instead of job specification in code
+	\item Automatic resource provisioning and scaling instead of manual setup
+	\item Shared cost model between clients instead of local model
+	\item External client state to recover from job failure instead of stateful clients
+\end{itemize}
+Instantiating such a platform is an important step towards making autotuning more accessible to enable more real-time \gls{dl} applications with little effort for developers.

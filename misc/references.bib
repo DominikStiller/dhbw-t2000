@@ -2,21 +2,21 @@
 
 @proceedings{.2013,
  year = {2013},
- title = {Proceedings of the 34th ACM SIGPLAN Conference on Programming Language Design and Implementation},
+ title = {{Proceedings of the 34th ACM SIGPLAN Conference on Programming Language Design and Implementation}},
  address = {New York, NY, USA},
  publisher = {{Association for Computing Machinery}},
  isbn = {9781450320146},
- series = {PLDI '13}
+ series = {{PLDI '13}}
 }
 
 
 @proceedings{.2018,
  year = {2018},
- title = {Proceedings of the 2nd ACM SIGPLAN International Workshop on Machine Learning and Programming Languages},
+ title = {{Proceedings of the 2nd ACM SIGPLAN International Workshop on Machine Learning and Programming Languages}},
  address = {New York, NY, USA},
  publisher = {{Association for Computing Machinery}},
  isbn = {9781450358347},
- series = {MAPL 2018}
+ series = {{MAPL 2018}}
 }
 
 
@@ -24,8 +24,8 @@
  abstract = {2013 IEEE 31st International Conference on Computer Design (ICCD);2013; ; ;10.1109/ICCD.2013.6657093},
  author = {Awatramani, Mihir and Zambreno, Joseph and Rover, Diane},
  year = {2013},
- title = {Increasing GPU throughput using kernel interleaved thread block scheduling},
- doi = {\url{10.1109/ICCD.2013.6657093}}
+ title = {{Increasing GPU throughput using kernel interleaved thread block scheduling}},
+ doi = {10.1109/ICCD.2013.6657093}
 }
 
 
@@ -37,7 +37,7 @@
 We introduce Oslo, a distributed edge-cloud solution for machine learning across multiple edges. As proof-of-concept, we demonstrate Oslo for an image classification problem where a (hypothetical) manufacturer seeks to validate that a robotic arm has picked up the correct type of bolt on an assembly line. We have recently engaged the first customer for Oslo (a medical imaging company); and are working with the HPE Pointnext and the Google alliances team on productization.},
  author = {Balagamwala, Muhammad and Cha, Joshua and Chavoshi, Sina and {Miguel Hernanz}, Luis and Oxenberg, Jeff and Nease, Lin and Ramanujam, Raj and Segal, Tzach and Shah, Amip and Turner, Paul and Vijayarajan, Rajesh},
  year = {2018},
- title = {Oslo: machine learning across multiple edges}
+ title = {{Oslo: machine learning across multiple edges}}
 }
 
 
@@ -45,10 +45,9 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {We introduce a learning-based framework to optimize tensor programs for deep learning workloads. Efficient implementations of tensor operators, such as matrix multiplication and high dimensional convolution, are key enablers of effective deep learning systems. However, existing systems rely on manually optimized libraries such as cuDNN where only a narrow range of server class GPUs are well-supported. The reliance on hardware-specific operator libraries limits the applicability of high-level graph optimizations and incurs significant engineering costs when deploying to new hardware targets. We use learning to remove this engineering burden. We learn domain-specific statistical cost models to guide the search of tensor operator implementations over billions of possible program variants. We further accelerate the search by effective model transfer across workloads. Experimental results show that our framework delivers performance competitive with state-of-the-art hand-tuned libraries for low-power CPU, mobile GPU, and server-class GPU.},
  author = {Chen, Tianqi and Zheng, Lianmin and Yan, Eddie and Jiang, Ziheng and Moreau, Thierry and Ceze, Luis and Guestrin, Carlos and Krishnamurthy, Arvind},
  date = {2018-05-21},
- title = {Learning to Optimize Tensor Programs},
- url = {\url{https://arxiv.org/pdf/1805.08166.pdf}},
- keywords = {Computer Science - Learning;Statistics - Machine Learning},
- urldate = {2019-06-04}
+ title = {{Learning to Optimize Tensor Programs}},
+ url = {https://arxiv.org/pdf/1805.08166.pdf},
+ keywords = {Computer Science - Learning;Statistics - Machine Learning}
 }
 
 
@@ -56,10 +55,17 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {There is an increasing need to bring machine learning to a wide diversity of hardware devices. Current frameworks rely on vendor-specific operator libraries and optimize for a narrow range of server-class GPUs. Deploying workloads to new platforms -- such as mobile phones, embedded devices, and accelerators (e.g., FPGAs, ASICs) -- requires significant manual effort. We propose TVM, a compiler that exposes graph-level and operator-level optimizations to provide performance portability to deep learning workloads across diverse hardware back-ends. TVM solves optimization challenges specific to deep learning, such as high-level operator fusion, mapping to arbitrary hardware primitives, and memory latency hiding. It also automates optimization of low-level programs to hardware characteristics by employing a novel, learning-based cost modeling method for rapid exploration of code optimizations. Experimental results show that TVM delivers performance across hardware back-ends that are competitive with state-of-the-art, hand-tuned libraries for low-power CPU, mobile GPU, and server-class GPUs. We also demonstrate TVM's ability to target new accelerator back-ends, such as the FPGA-based generic deep learning accelerator. The system is open sourced and in production use inside several major companies.},
  author = {Chen, Tianqi and Moreau, Thierry and Jiang, Ziheng and Zheng, Lianmin and Yan, Eddie and Cowan, Meghan and Shen, Haichen and Wang, Leyuan and Hu, Yuwei and Ceze, Luis and Guestrin, Carlos and Krishnamurthy, Arvind},
  date = {2018-02-12},
- title = {TVM: An Automated End-to-End Optimizing Compiler for Deep Learning},
- url = {\url{https://arxiv.org/pdf/1802.04799.pdf}},
- keywords = {Computer Science - Artificial Intelligence;Computer Science - Learning;Computer Science - Programming Languages},
- urldate = {2019-06-05}
+ title = {{TVM: An Automated End-to-End Optimizing Compiler for Deep Learning}},
+ url = {https://arxiv.org/pdf/1802.04799.pdf},
+ keywords = {Computer Science - Artificial Intelligence;Computer Science - Learning;Computer Science - Programming Languages}
+}
+
+
+@article{Cho.2019,
+ abstract = {Hardware specific tuning ofML models is key to extracting maximum performance from available infrastructure resource. We introduce RESONATOR, our autotuning service framework to enable optimization oflarge-scale neural networks without requiring complex configuration by endusers. As one ofcore components in RESONATOR, we design a novel load-aware autotuning scheduler to address existing limitations ofautotuning frameworks by interleaving autotuning sub-procedures between multiple autotuning jobs (or even single autotuning job), thus reducing cost of auto-tuning considerably. As a proof-of-concept, we design and implement RESONATOR on Kubernetes container management system and showcase the advantage of the proposed load-aware scheduler with multiple commonly used neural network models.},
+ author = {Cho, Junguk and Ahmed, Faraz and Cao, Lianje and Sharma, Puneet and Stiller, Dominik},
+ year = {2019},
+ title = {{Resonator: ML Autotuning-as-a-Service for Edge-to-Cloud Infrastructure}}
 }
 
 
@@ -67,8 +73,8 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {Object detection performance, as measured on the canonical PASCAL VOC dataset, has plateaued in the last few years. The best-performing methods are complex ensemble systems that typically combine multiple low-level image features with high-level context. In this paper, we propose a simple and scalable detection algorithm that improves mean average precision (mAP) by more than 30{\%} relative to the previous best result on VOC 2012---achieving a mAP of 53.3{\%}. Our approach combines two key insights: (1) one can apply high-capacity convolutional neural networks (CNNs) to bottom-up region proposals in order to localize and segment objects and (2) when labeled training data is scarce, supervised pre-training for an auxiliary task, followed by domain-specific fine-tuning, yields a significant performance boost. Since we combine region proposals with CNNs, we call our method R-CNN: Regions with CNN features. We also compare R-CNN to OverFeat, a recently proposed sliding-window detector based on a similar CNN architecture. We find that R-CNN outperforms OverFeat by a large margin on the 200-class ILSVRC2013 detection dataset. Source code for the complete system is available at http://www.cs.berkeley.edu/{\~{}}rbg/rcnn.},
  author = {Girshick, Ross and Donahue, Jeff and Darrell, Trevor and Malik, Jitendra},
  date = {11/11/2013},
- title = {Rich feature hierarchies for accurate object detection and semantic  segmentation},
- url = {\url{https://arxiv.org/pdf/1612.08242.pdf}},
+ title = {{Rich feature hierarchies for accurate object detection and semantic  segmentation}},
+ url = {https://arxiv.org/pdf/1612.08242.pdf},
  keywords = {Computer Science - Computer Vision and Pattern Recognition;R-CNN},
  urldate = {5/19/2019}
 }
@@ -77,8 +83,8 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
 @article{Glorot.2010,
  author = {Glorot, Xavier and {Yoshua Bengio}},
  year = {2010},
- title = {Understanding the difficulty of training deep feedforward neural networks},
- url = {\url{http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf?hc_location=ufi}},
+ title = {{Understanding the difficulty of training deep feedforward neural networks}},
+ url = {http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf?hc_location=ufi},
  urldate = {5/18/2019}
 }
 
@@ -87,25 +93,25 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {Deeper neural networks are more difficult to train. We present a residual learning framework to ease the training of networks that are substantially deeper than those used previously. We explicitly reformulate the layers as learning residual functions with reference to the layer inputs, instead of learning unreferenced functions. We provide comprehensive empirical evidence showing that these residual networks are easier to optimize, and can gain accuracy from considerably increased depth. On the ImageNet dataset we evaluate residual nets with a depth of up to 152 layers---8x deeper than VGG nets but still having lower complexity. An ensemble of these residual nets achieves 3.57{\%} error on the ImageNet test set. This result won the 1st place on the ILSVRC 2015 classification task. We also present analysis on CIFAR-10 with 100 and 1000 layers.  The depth of representations is of central importance for many visual recognition tasks. Solely due to our extremely deep representations, we obtain a 28{\%} relative improvement on the COCO object detection dataset. Deep residual nets are foundations of our submissions to ILSVRC {\&} COCO 2015 competitions, where we also won the 1st places on the tasks of ImageNet detection, ImageNet localization, COCO detection, and COCO segmentation.},
  author = {He, Kaiming and Zhang, Xiangyu and Ren, Shaoqing and Sun, Jian},
  date = {12/10/2015},
- title = {Deep Residual Learning for Image Recognition},
- url = {\url{https://arxiv.org/pdf/1512.03385.pdf}},
- keywords = {Computer Science - Computer Vision and Pattern Recognition},
- urldate = {5/18/2019}
+ title = {{Deep Residual Learning for Image Recognition}},
+ url = {https://arxiv.org/pdf/1512.03385.pdf},
+ keywords = {Computer Science - Computer Vision and Pattern Recognition}
 }
 
 
 @misc{Hu.2017,
  author = {Hu, Yuwei},
  year = {2017},
- title = {Optimize Deep Learning GPU Operators with TVM: A Depthwise Convolution Example},
- url = {\url{https://tvm.ai/2017/08/22/Optimize-Deep-Learning-GPU-Operators-with-TVM-A-Depthwise-Convolution-Example}}
+ title = {{Optimize Deep Learning GPU Operators with TVM: A Depthwise Convolution Example}},
+ url = {https://tvm.ai/2017/08/22/Optimize-Deep-Learning-GPU-Operators-with-TVM-A-Depthwise-Convolution-Example}
 }
 
 
 @book{IanGoodfellow.2016,
  author = {{Ian Goodfellow} and {Yoshua Bengio} and {Aaron Courville}},
  year = {2016},
- title = {Deep Learning},
+ title = {{Deep Learning}},
+ url = {https://www.deeplearningbook.org/},
  publisher = {{MIT Press}}
 }
 
@@ -114,8 +120,8 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {Training Deep Neural Networks is complicated by the fact that the distribution of each layer's inputs changes during training, as the parameters of the previous layers change. This slows down the training by requiring lower learning rates and careful parameter initialization, and makes it notoriously hard to train models with saturating nonlinearities. We refer to this phenomenon as internal covariate shift, and address the problem by normalizing layer inputs. Our method draws its strength from making normalization a part of the model architecture and performing the normalization for each training mini-batch. Batch Normalization allows us to use much higher learning rates and be less careful about initialization. It also acts as a regularizer, in some cases eliminating the need for Dropout. Applied to a state-of-the-art image classification model, Batch Normalization achieves the same accuracy with 14 times fewer training steps, and beats the original model by a significant margin. Using an ensemble of batch-normalized networks, we improve upon the best published result on ImageNet classification: reaching 4.9{\%} top-5 validation error (and 4.8{\%} test error), exceeding the accuracy of human raters.},
  author = {Ioffe, Sergey and Szegedy, Christian},
  date = {2/11/2015},
- title = {Batch Normalization: Accelerating Deep Network Training by Reducing  Internal Covariate Shift},
- url = {\url{https://arxiv.org/pdf/1502.03167.pdf}},
+ title = {{Batch Normalization: Accelerating Deep Network Training by Reducing  Internal Covariate Shift}},
+ url = {https://arxiv.org/pdf/1502.03167.pdf},
  keywords = {Computer Science - Learning},
  urldate = {5/18/2019}
 }
@@ -125,15 +131,15 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {We present a method for detecting objects in images using a single deep neural network. Our approach, named SSD, discretizes the output space of bounding boxes into a set of default boxes over different aspect ratios and scales per feature map location. At prediction time, the network generates scores for the presence of each object category in each default box and produces adjustments to the box to better match the object shape. Additionally, the network combines predictions from multiple feature maps with different resolutions to naturally handle objects of various sizes. Our SSD model is simple relative to methods that require object proposals because it completely eliminates proposal generation and subsequent pixel or feature resampling stage and encapsulates all computation in a single network. This makes SSD easy to train and straightforward to integrate into systems that require a detection component. Experimental results on the PASCAL VOC, MS COCO, and ILSVRC datasets confirm that SSD has comparable accuracy to methods that utilize an additional object proposal step and is much faster, while providing a unified framework for both training and inference. Compared to other single stage methods, SSD has much better accuracy, even with a smaller input image size. For {\$}300$\backslash$times 300{\$} input, SSD achieves 72.1{\%} mAP on VOC2007 test at 58 FPS on a Nvidia Titan X and for {\$}500$\backslash$times 500{\$} input, SSD achieves 75.1{\%} mAP, outperforming a comparable state of the art Faster R-CNN model. Code is available at https://github.com/weiliu89/caffe/tree/ssd .},
  author = {Liu, Wei and Anguelov, Dragomir and Erhan, Dumitru and Szegedy, Christian and Reed, Scott and Fu, Cheng-Yang and Berg, Alexander C.},
  year = {2016},
- title = {SSD: Single Shot MultiBox Detector},
- url = {\url{https://arxiv.org/pdf/1512.02325.pdf}},
+ title = {{SSD: Single Shot MultiBox Detector}},
+ url = {https://arxiv.org/pdf/1512.02325.pdf},
  keywords = {Computer Science - Computer Vision and Pattern Recognition},
  urldate = {5/19/2019},
  pages = {21--37},
  volume = {9905},
  issn = {0302-9743},
  journal = {0302-9743},
- doi = {\url{10.1007/978-3-319-46448-0{\textunderscore }2}}
+ doi = {10.1007/978-3-319-46448-0{\textunderscore }2}
 }
 
 
@@ -141,8 +147,8 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {The popularity of Convolutional Neural Network (CNN) models and the ubiquity of CPUs imply that better performance of CNN model inference on CPUs can deliver significant gain to a large number of users. To improve the performance of CNN inference on CPUs, current approaches like MXNet and Intel OpenVINO usually treat the model as a graph and use the high-performance libraries such as Intel MKL-DNN to implement the operations of the graph. While achieving reasonable performance on individual operations from the off-the-shelf libraries, this solution makes it inflexible to conduct optimizations at the graph level, as the local operation-level optimizations are predefined. Therefore, it is restrictive and misses the opportunity to optimize the end-to-end inference pipeline as a whole. This paper presents \emph{NeoCPU}, a comprehensive approach of CNN model inference on CPUs that employs a full-stack and systematic scheme of optimizations. \emph{NeoCPU} optimizes the operations as templates without relying on third-parties libraries, which enables further improvement of the performance via operation- and graph-level joint optimization. Experiments show that \emph{NeoCPU} achieves up to 3.45$\times$ lower latency for CNN model inference than the current state-of-the-art implementations on various kinds of popular CPUs.},
  author = {Liu, Yizhi and Wang, Yao and Yu, Ruofei and Li, Mu and Sharma, Vin and Wang, Yida},
  year = {2019},
- title = {Optimizing CNN Model Inference on CPUs},
- url = {\url{http://arxiv.org/pdf/1809.02697v3}},
+ title = {{Optimizing CNN Model Inference on CPUs}},
+ url = {http://arxiv.org/pdf/1809.02697v3},
  keywords = {Computer Science - Distributed Parallel and Cluster Computing}
 }
 
@@ -150,32 +156,32 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
 @article{LyveDataLabs.2019,
  author = {{Lyve Data Labs}},
  year = {2019},
- title = {Seagate Edge RX: A Smart Manufacturing Reference Architecture Solution},
- urldate = {2019-09-01}
+ title = {{Seagate Edge RX: A Smart Manufacturing Reference Architecture Solution}},
+ url = {https://labs.seagate.com/wp-content/uploads/sites/7/2019/06/TP711-2-1905US_Smart-MFG-Ref-Architecture.pdf}
 }
 
 
 @unpublished{Ma.2005,
  author = {Ma, Zhe and Catthoor, Francky and Vounckx, Johan},
- title = {Hierarchical Task Scheduler for Interleaving Subtasks on Heterogeneous Multiprocessor Platforms},
- url = {\url{http://doi.acm.org/10.1145/1120725.1120765}},
- doi = {\url{10.1145/1120725.1120765}}
+ title = {{Hierarchical Task Scheduler for Interleaving Subtasks on Heterogeneous Multiprocessor Platforms}},
+ url = {http://doi.acm.org/10.1145/1120725.1120765},
+ doi = {10.1145/1120725.1120765}
 }
 
 
 @inproceedings{RaganKelley.2013,
  author = {Ragan-Kelley, Jonathan and Barnes, Connelly and Adams, Andrew and Paris, Sylvain and Durand, Fr{\'e}do and Amarasinghe, Saman},
- title = {Halide: A Language and Compiler for Optimizing Parallelism, Locality, and Recomputation in Image Processing Pipelines},
- url = {\url{https://doi.org/10.1145/2491956.2462176}},
+ title = {{Halide: A Language and Compiler for Optimizing Parallelism, Locality, and Recomputation in Image Processing Pipelines}},
+ url = {https://doi.org/10.1145/2491956.2462176},
  keywords = {autotuning;compiler;domain specific language;gpu;image processing;locality;optimization;parallelism;redundant computation;vectorization},
  pages = {519--530},
  publisher = {{Association for Computing Machinery}},
  isbn = {9781450320146},
- series = {PLDI '13},
- booktitle = {Proceedings of the 34th ACM SIGPLAN Conference on Programming Language Design and Implementation},
+ series = {{PLDI '13}},
+ booktitle = {{Proceedings of the 34th ACM SIGPLAN Conference on Programming Language Design and Implementation}},
  year = {2013},
  address = {New York, NY, USA},
- doi = {\url{10.1145/2491956.2462176}}
+ doi = {10.1145/2491956.2462176}
 }
 
 
@@ -183,8 +189,8 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {2016 IEEE Conference on Computer Vision and Pattern Recognition},
  author = {Redmon, Joseph and {Santosh Divvala} and {Ross Girshick} and {Ali Farhadi}},
  year = {2015},
- title = {You Only Look Once: Unified, Real-Time Object Detection},
- url = {\url{https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Redmon_You_Only_Look_CVPR_2016_paper.pdf}},
+ title = {{You Only Look Once: Unified, Real-Time Object Detection}},
+ url = {https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Redmon_You_Only_Look_CVPR_2016_paper.pdf},
  urldate = {5/18/2019}
 }
 
@@ -193,8 +199,8 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {We introduce YOLO9000, a state-of-the-art, real-time object detection system that can detect over 9000 object categories. First we propose various improvements to the YOLO detection method, both novel and drawn from prior work. The improved model, YOLOv2, is state-of-the-art on standard detection tasks like PASCAL VOC and COCO. At 67 FPS, YOLOv2 gets 76.8 mAP on VOC 2007. At 40 FPS, YOLOv2 gets 78.6 mAP, outperforming state-of-the-art methods like Faster RCNN with ResNet and SSD while still running significantly faster. Finally we propose a method to jointly train on object detection and classification. Using this method we train YOLO9000 simultaneously on the COCO detection dataset and the ImageNet classification dataset. Our joint training allows YOLO9000 to predict detections for object classes that don't have labelled detection data. We validate our approach on the ImageNet detection task. YOLO9000 gets 19.7 mAP on the ImageNet detection validation set despite only having detection data for 44 of the 200 classes. On the 156 classes not in COCO, YOLO9000 gets 16.0 mAP. But YOLO can detect more than just 200 classes; it predicts detections for more than 9000 different object categories. And it still runs in real-time.},
  author = {Redmon, Joseph and Farhadi, Ali},
  date = {12/25/2016},
- title = {YOLO9000: Better, Faster, Stronger},
- url = {\url{http://arxiv.org/pdf/1612.08242v1}},
+ title = {{YOLO9000: Better, Faster, Stronger}},
+ url = {http://arxiv.org/pdf/1612.08242v1},
  keywords = {Computer Science - Computer Vision and Pattern Recognition},
  urldate = {5/19/2019}
 }
@@ -203,15 +209,14 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
 @inproceedings{Roesch.2018,
  abstract = {-  Computer systems organization  -{\textgreater}  Architectures; Neural networks; Heterogeneous (hybrid) systems; -  Software and its engineering  -{\textgreater}  Compilers; Domain specific languages; -  Computing methodologies  -{\textgreater}  Machine learning;},
  author = {Roesch, Jared and Lyubomirsky, Steven and Weber, Logan and Pollock, Josh and Kirisame, Marisa and Chen, Tianqi and Tatlock, Zachary},
- title = {Relay: a new IR for machine learning frameworks},
- url = {\url{https://dlnext.acm.org/doi/abs/10.1145/3211346.3211348}},
+ title = {{Relay: a new IR for machine learning frameworks}},
+ url = {https://dlnext.acm.org/doi/abs/10.1145/3211346.3211348},
  keywords = {compilers;differentiable programming;intermediate representation;intermediate representation, machine learning, compilers, differentiable programming;machine learning},
- urldate = {2019-09-02},
  pages = {58--68},
  publisher = {{Association for Computing Machinery}},
  isbn = {9781450358347},
- series = {MAPL 2018},
- booktitle = {Proceedings of the 2nd ACM SIGPLAN International Workshop on Machine Learning and Programming Languages},
+ series = {{MAPL 2018}},
+ booktitle = {{Proceedings of the 2nd ACM SIGPLAN International Workshop on Machine Learning and Programming Languages}},
  year = {2018},
  address = {New York, NY, USA}
 }
@@ -220,9 +225,8 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
 @article{Seagate.2019,
  author = {Seagate},
  year = {2019},
- title = {Smart manufacturing moves from autonomous to intelligent: Inside Project Athena: Seagate's internal AI edge platform},
- url = {\url{https://www.seagate.com/www-content/enterprise-storage/it-4-0/images/cs595-1-1901-seagate-athena.pdf}},
- urldate = {2019-09-01}
+ title = {{Smart manufacturing moves from autonomous to intelligent: Inside Project Athena: Seagate's internal AI edge platform}},
+ url = {https://www.seagate.com/www-content/enterprise-storage/it-4-0/images/cs595-1-1901-seagate-athena.pdf}
 }
 
 
@@ -230,8 +234,8 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {We present an integrated framework for using Convolutional Networks for classification, localization and detection. We show how a multiscale and sliding window approach can be efficiently implemented within a ConvNet. We also introduce a novel deep learning approach to localization by learning to predict object boundaries. Bounding boxes are then accumulated rather than suppressed in order to increase detection confidence. We show that different tasks can be learned simultaneously using a single shared network. This integrated framework is the winner of the localization task of the ImageNet Large Scale Visual Recognition Challenge 2013 (ILSVRC2013) and obtained very competitive results for the detection and classifications tasks. In post-competition work, we establish a new state of the art for the detection task. Finally, we release a feature extractor from our best model called OverFeat.},
  author = {Sermanet, Pierre and Eigen, David and Zhang, Xiang and Mathieu, Michael and Fergus, Rob and LeCun, Yann},
  date = {12/21/2013},
- title = {OverFeat: Integrated Recognition, Localization and Detection using  Convolutional Networks},
- url = {\url{https://arxiv.org/pdf/1312.6229.pdf}},
+ title = {{OverFeat: Integrated Recognition, Localization and Detection using  Convolutional Networks}},
+ url = {https://arxiv.org/pdf/1312.6229.pdf},
  keywords = {Computer Science - Computer Vision and Pattern Recognition},
  urldate = {5/19/2019}
 }
@@ -241,9 +245,8 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {2015 IEEE Conference on Computer Vision and Pattern Recognition},
  author = {Szegedy, Christian and {Wei Liu} and {Yangqing Jia} and {Pierre Sermanet} and {Scott Reed} and {Dragomir Anguelov} and {Dumitru Erhan} and {Vincent Vanhoucke} and {Andrew Rabinovich}},
  year = {2015},
- title = {Going Deeper With Convolutions},
- url = {\url{https://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Szegedy_Going_Deeper_With_2015_CVPR_paper.pdf}},
- urldate = {5/18/2019}
+ title = {{Going Deeper With Convolutions}},
+ url = {https://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Szegedy_Going_Deeper_With_2015_CVPR_paper.pdf}
 }
 
 
@@ -251,7 +254,7 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {Convolutional networks are at the core of most state-of-the-art computer vision solutions for a wide variety of tasks. Since 2014 very deep convolutional networks started to become mainstream, yielding substantial gains in various benchmarks. Although increased model size and computational cost tend to translate to immediate quality gains for most tasks (as long as enough labeled data is provided for training), computational efficiency and low parameter count are still enabling factors for various use cases such as mobile vision and big-data scenarios. Here we explore ways to scale up networks in ways that aim at utilizing the added computation as efficiently as possible by suitably factorized convolutions and aggressive regularization. We benchmark our methods on the ILSVRC 2012 classification challenge validation set demonstrate substantial gains over the state of the art: 21.2{\%} top-1 and 5.6{\%} top-5 error for single frame evaluation using a network with a computational cost of 5 billion multiply-adds per inference and with using less than 25 million parameters. With an ensemble of 4 models and multi-crop evaluation, we report 3.5{\%} top-5 error on the validation set (3.6{\%} error on the test set) and 17.3{\%} top-1 error on the validation set.},
  author = {Szegedy, Christian and Vanhoucke, Vincent and Ioffe, Sergey and Shlens, Jonathon and Wojna, Zbigniew},
  date = {2015-12-02},
- title = {Rethinking the Inception Architecture for Computer Vision},
+ title = {{Rethinking the Inception Architecture for Computer Vision}},
  keywords = {Computer Science - Computer Vision and Pattern Recognition},
  urldate = {2019-09-01}
 }
@@ -261,10 +264,9 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {Deep learning models with convolutional and recurrent networks are now ubiquitous and analyze massive amounts of audio, image, video, text and graph data, with applications in automatic translation, speech-to-text, scene understanding, ranking user preferences, ad placement, etc. Competing frameworks for building these networks such as TensorFlow, Chainer, CNTK, Torch/PyTorch, Caffe1/2, MXNet and Theano, explore different tradeoffs between usability and expressiveness, research or production orientation and supported hardware. They operate on a DAG of computational operators, wrapping high-performance libraries such as CUDNN (for NVIDIA GPUs) or NNPACK (for various CPUs), and automate memory allocation, synchronization, distribution. Custom operators are needed where the computation does not fit existing high-performance library calls, usually at a high engineering cost. This is frequently required when new operators are invented by researchers: such operators suffer a severe performance penalty, which limits the pace of innovation. Furthermore, even if there is an existing runtime call these frameworks can use, it often doesn't offer optimal performance for a user's particular network architecture and dataset, missing optimizations between operators as well as optimizations that can be done knowing the size and shape of data. Our contributions include (1) a language close to the mathematics of deep learning called Tensor Comprehensions, (2) a polyhedral Just-In-Time compiler to convert a mathematical description of a deep learning DAG into a CUDA kernel with delegated memory management and synchronization, also providing optimizations such as operator fusion and specialization for specific sizes, (3) a compilation cache populated by an autotuner. [Abstract cutoff]},
  author = {Vasilache, Nicolas and Zinenko, Oleksandr and Theodoridis, Theodoros and Goyal, Priya and DeVito, Zachary and Moses, William S. and Verdoolaege, Sven and Adams, Andrew and Cohen, Albert},
  date = {2018-02-13},
- title = {Tensor Comprehensions: Framework-Agnostic High-Performance Machine  Learning Abstractions},
- url = {\url{http://arxiv.org/pdf/1802.04730v3}},
- keywords = {Computer Science - Learning;Computer Science - Programming Languages},
- urldate = {2019-08-26}
+ title = {{Tensor Comprehensions: Framework-Agnostic High-Performance Machine  Learning Abstractions}},
+ url = {http://arxiv.org/pdf/1802.04730v3},
+ keywords = {Computer Science - Learning;Computer Science - Programming Languages}
 }
 
 
@@ -272,8 +274,8 @@ We introduce Oslo, a distributed edge-cloud solution for machine learning across
  abstract = {Large Convolutional Network models have recently demonstrated impressive classification performance on the ImageNet benchmark. However there is no clear understanding of why they perform so well, or how they might be improved. In this paper we address both issues. We introduce a novel visualization technique that gives insight into the function of intermediate feature layers and the operation of the classifier. We also perform an ablation study to discover the performance contribution from different model layers. This enables us to find model architectures that outperform Krizhevsky $\backslash$etal on the ImageNet classification benchmark. We show our ImageNet model generalizes well to other datasets: when the softmax classifier is retrained, it convincingly beats the current state-of-the-art results on Caltech-101 and Caltech-256 datasets.},
  author = {Zeiler, Matthew D. and Fergus, Rob},
  date = {11/12/2013},
- title = {Visualizing and Understanding Convolutional Networks},
- url = {\url{https://arxiv.org/pdf/1311.2901.pdf}},
+ title = {{Visualizing and Understanding Convolutional Networks}},
+ url = {https://arxiv.org/pdf/1311.2901.pdf},
  keywords = {boring formatting information;Computer Science - Computer Vision and Pattern Recognition;ICML;machine learning},
  urldate = {5/22/2019}
 }

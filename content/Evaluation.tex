@@ -24,3 +24,5 @@ Add Knows which job is in which stage and how long is each stage estimated to ta
 running update model and build of one job directly after another will probably decrease waiting time, since that job can then already use the target device, so there is less target device idle time
 Believe that more and heterogenous jobs that vary significantly in complexity will enable better resource utilization and less wait time, given a more intelligent scheduler
 The scheduler can be enhanced with more granularity for production-grade implementations.
+Push instead of busy waiting
+More sophisticated scheduler, requires moving more autotuning logic from client to scheduler

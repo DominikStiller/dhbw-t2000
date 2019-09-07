@@ -36,7 +36,7 @@
 	bibwarn=true,
 	bibencoding=utf8,
 	sortlocale=en_US,
-	url=false,
+	%url=false,
 	style=ieee
 ]{biblatex}
 \usepackage[activate={true,nocompatibility},final,tracking=true,kerning=true,spacing=true,factor=1100,stretch=10,shrink=10]{microtype}
@@ -66,6 +66,7 @@
 \clubpenalty = 10000 % schließt Seitenumbruch nach der ersten Zeile eines neuen Absatzes aus
 \widowpenalty = 10000 % schließt die letzte Zeile eines Absatzes steht auf einer neuen Seite aus
 \displaywidowpenalty=10000
+\renewcommand{\topfraction}{.75}
 
 % graphicx
 \graphicspath{ {./images/} }

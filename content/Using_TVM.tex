@@ -75,7 +75,7 @@ These results show that TVM on par with manual optimization, at least for our li
 While the autotuning results are promising, we found that autotuning process suffers from some fundamental restrictions inherent to the current design which limit its efficiency. For all real measurements in this section, we evaluated autotuning of a ResNet-18 (12 convolutional layers, 1 fully-connected layer) with 2000 iterations per task on two machines with two Intel Xeon E5-2650 v3 CPUs and four Tesla K80 GPUs, one machine for client and target device each.
 
 \subsection{Resource Utilization}
-Since stages in autotuning depend on results of the previous stages (configurations are required for building, executables are necessary for profiling, time measurements are used to update the model), they need to be executed in sequence. Because profiling runs on the target device, the result is a lot of idle time on both the client and the target device. This sub-optimal resource\footnote{We define \textit{resource} as a machine that executes some stage in the autotuning process, e.g., the target device or the hardware that the client runs on.} utilization is exemplified in Figure \ref{fig:tvm-res-util}.
+Since stages in autotuning depend on results of the previous stages (configurations are required for building, executables are necessary for profiling, time measurements are used to update the model), they need to be executed in sequence. Because profiling runs on the target device, the result is a lot of idle time on both the client and the target device. This sub-optimal \gls{resource}\footnote{We define \textit{resource} as a machine that executes some stage of the autotuning process, e.g., the target device or the hardware that the client runs on.} utilization is exemplified in Figure \ref{fig:tvm-res-util}.
 
 \begin{figure}
 	\centering
@@ -86,14 +86,14 @@ Since stages in autotuning depend on results of the previous stages (configurati
 
 Measurements with our test setup showed that, for a total autotuning completion time of \SI{14.5}{\hour}, the client is idle for \SI{6.6}{\hour} (45\%) and the target device for \SI{7.9}{\hour} (55\%). Since computation resources, especially \gls{dl} accelerators, are rather costly, we want to minimize resource idle time. If existing resources are utilized better, it might not be necessary to acquire new hardware. If the individual occurences of idle time are long enough, it might be possible to use it for other computations in between. Indeed, the mean execution time for each stage is as follows: \SI{8.3}{\second} for building, \SI{39.5}{\second} for profiling, and \SI{44.0}{\second} for updating the model and selecting the next batch. This is long enough to reasonably assume that resource utilization can be improved by sharing the device. However, interference must be prevented.
 
-\subsection{Scalability}
+\subsection{Scalability}\label{sec:scalability}
 In preparation for enabling autotuning on a larger-scale, we need to examine the scalability of the current design. Scalability in this section refers to the ability to run an arbitrary number of autotuning jobs at the same time without sacrificing efficiency and result quality. We define objectives, that a scalable solution should satisfy:
 \begin{enumerate}
 	\item High inference performance, since it is the ultimate goal of autotuning
 	\item Low amount of required hardware, since additional devices are costly
 	\item Low autotuning time, since autotuning takes long
 \end{enumerate}
-These objectives are listed in order of priority. Good inference performance is the primary objective. It obviates the need to buy new hardware. Furthermore, there usually is a large amount of inferences which makes a longer autotuning time negligible over time. Rapid autotuning is nonetheless desirable.
+These objectives are listed in order of priority. Good inference performance is the primary objective. It obviates the need to buy new hardware. Furthermore, there usually is a large amount of inferences which makes a longer execution time for autotuning negligible in the long-term. Rapid autotuning is nonetheless desirable.
 
 We compare two setups for scaling that are possible using only the components that TVM comes with by default, schematically depicted in Figure \ref{fig:tvm-scaling-setups}. For the sake of simplicity, we only show depict two jobs, but this generalizes to any higher number. The evaluation of both setups with regard to the previously defined objectives is summarized in Table \ref{tab:tvm-scaling-setups}.
 
@@ -123,12 +123,12 @@ We compare two setups for scaling that are possible using only the components th
 	\renewcommand{\arraystretch}{1.2}
 	\sffamily
 	\centering
-	\begin{tabular}{l l l l}
-	\rowcolor{black} \heading{Setup} & \heading{Hardware required} & \heading{Inference performance} & \heading{Autotuning time} \vspace{2pt} \\
+	\begin{tabularx}{\textwidth}{l l l X}
+	\rowcolor{black} \heading{Setup} & \heading{Hardware req.} & \heading{Inference speed} & \heading{Autotuning time} \vspace{2pt} \\
 	\textbf{Dedicated resources} & \bad{2x} & \good{High} & \good{Low} \\
 	\textbf{Shared resources} & \good{1x} & \bad{Low} & \bad{High} \\
-	\textbf{Optimum} & \good{1x} & \good{Low} & \good{Low} \\
-	\end{tabular}
+	\textbf{Optimum} & \good{1x} & \good{High} & \good{Low} \\
+	\end{tabularx}
 	\caption{Evaluation of setups regarding scalability objectives}
 	\label{tab:tvm-scaling-setups}
 \end{table}

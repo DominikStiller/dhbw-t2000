@@ -29,6 +29,7 @@
 		\input{content/Abstract}
 	\end{abstract}
 
+	\setlength{\cftbeforetoctitleskip}{2.1em}
 	\begin{spacing}{1.15}
 	   \tableofcontents
 	\end{spacing}
@@ -63,13 +64,13 @@
 	%----------------------------------------------------------------------------
 	\chapter{Introduction}
 	\input{content/Introduction}
-	\chapter{Background}
+	\chapter{Background}\label{sec:background}
 	\input{content/Background}
-	\chapter{Using TVM}
+	\chapter{Using TVM}\label{sec:using-tvm}
 	\input{content/Using_TVM}
-	\chapter{Autotuning Scheduler}
+	\chapter{Autotuning Scheduler}\label{sec:autotuning-scheduler}
 	\input{content/Autotuning_Scheduler}
-	\chapter{Evaluation}
+	\chapter{Evaluation}\label{sec:evaluation}
 	\input{content/Evaluation}
 	\chapter{Conclusion}
 	\input{content/Conclusion}
@@ -85,6 +86,7 @@
 
 	\printglossary[style=altlist]
 	
-	\clearpage
 	\appendix
+	\chapter{Results}\label{sec:results}
+	\includegraphics[height=\textwidth,angle=-90,origin=c]{chart_all_results}
 \end{document}

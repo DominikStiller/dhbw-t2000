@@ -1,4 +1,4 @@
-\documentclass{scrreprt}
+\documentclass[numbers=noenddot]{scrreprt}
 
 
 %----------------------------------------------------------------------------
@@ -24,6 +24,7 @@
 \usepackage{setspace}
 \usepackage{array}
 \usepackage[outputdir=build]{minted}
+\usepackage[toc,page]{appendix}
 \usepackage{tabularx}
 \usepackage{colortbl}
 \usepackage{makecell}
@@ -49,7 +50,7 @@
 % KOMA-Script
 \KOMAoptions{
 	pagesize=pdftex,
-	twoside,			% Einseitiger Druck.
+	twoside=false,		% Einseitiger Druck.
 	parskip=half,		% Halbe Zeile Abstand zwischen Absätzen.
 	headheight = 12pt,	% Höhe der Kopfzeile
 	headsepline,		% Linie nach Kopfzeile.
@@ -57,7 +58,6 @@
 	footheight = 16pt,	% Höhe der Fusszeile
 	abstract=true,		% Abstract Überschriften
 	DIV=calc,			% Satzspiegel berechnen
-	BCOR=20mm,			% Bindekorrektur links: 8mm
 	headinclude=false,	% Kopfzeile nicht in den Satzspiegel einbeziehen
 	footinclude=false,	% Fußzeile nicht in den Satzspiegel einbeziehen
 	listof=totoc,		% Abbildungs-/ Tabellenverzeichnis im Inhaltsverzeichnis darstellen
@@ -73,13 +73,6 @@
 
 % biblatex
 \addbibresource{./misc/references.bib}
-\DeclareSourcemap{
-	\maps[datatype=bibtex]{
-		\map{
-			\step[fieldsource=title, match=\regexp{\b([A-Z]{2,})\b}, replace={{}{$1}}]
-		}
-	}
-}
 
 % Microtype
 % http://www.khirevich.com/latex/micrsotype/
@@ -140,7 +133,7 @@
 %----------------------------------------------------------------------------
 
 % Page
-\geometry{margin=2.5cm, foot=1cm}
+\geometry{margin=2.5cm, foot=1cm, bindingoffset=8mm}
 
 % 
 \KOMAoptions{fontsize=12pt}
@@ -150,6 +143,8 @@
 
 % Table of Contents
 \setcounter{tocdepth}{1}
+
+\renewcommand{\appendixname}{Appendix}
 
 
 %----------------------------------------------------------------------------

@@ -1,12 +1,20 @@
 \newglossaryentry{targetdevice}{
 	name={target device},
-	description={the device that inference will be performed on; usually an accelerator located on the edge}
+	description={the device that inference will be performed on; usually an accelerator located at the edge}
 }
 \newglossaryentry{tensor}{
 	name={tensor},
 	description={a multi-dimensional generalization of vectors and matrices; commonly used data structure in deep learning}
 }
-\newglossaryentry{autotuning job}{
-	name={job},
-	description={executing the autotuning process for one whole model}
+\newglossaryentry{tensorop}{
+	name={tensor operator},
+	description={a function operating on one or multiple tensors such as convolution or matrix multiplication; commonly found in deep learning models}
+}
+\newglossaryentry{job}{
+	name={autotuning job},
+	description={one execution of the autotuning process for a model}
+}
+\newglossaryentry{resource}{
+	name={autotuning resource},
+	description={a machine that executes some stage of the autotuning process; e.g., the client machine or the target device}
 }

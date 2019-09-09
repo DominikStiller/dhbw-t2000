@@ -39,14 +39,13 @@ All setups are controlled by the scheduler so each experiment is affected by the
 
 Our test model is a ResNet-18, which consists of 12 convolution layers and one fully connected layers, resulting in a job of 13 tasks. We autotune with 2000 trials per task and a profiling timeout of \SI{5}{\second}. Transfer learning from the global autotuning database is disabled so each experiment starts from the same, untrained cost model for a fair comparison. However, transfer learning is enabled between tasks. For time reasons, each experiment is only conducted once so the sample size is small.
 
-A detailed chart of the autotuning times for all setups can be found in Appendix \ref{sec:results}.
+A complete chart of the autotuning times for all setups can be found in Appendix \ref{sec:results}.
 
 \section{Results}
-First, we examine the impact of interference that was qualitatively described in Section \ref{sec:scalability}. We compare A, the optimum in terms of autotuning time and inference performance, with B and C (Figure \ref{fig:chart-interference-impact}). B lets jobs naturally interfere, while C forces maximum interference as worst case scenario.\\
-The baseline completion time from A is \SI{14.5}{\hour}, \SI{6.1}{\hour} (42\%) of which are spent updating the model. Natural interference results in an increase in autotuning time of \SI{4.1}{\hour} (+28\%) while forced interference takes even \SI{5.0}{\hour} (+34\%) longer\footnote{For C, the time spent waiting for the other job to finish a stage introduced by the synchronous scheduling algorithm to force interference was subtracted from the total completion time since it would not occur naturally.}. This significant increase can be attributed to slower model updates, which also experience a deterioration in performance since they are rather computationally intensive. Compared with the baseline, the total time spent updating the model increases by \SI{3.8}{\hour} (+62\%) for B and by \SI{5.2}{\hour} (+85\%) for C. Build time only increases marginally, with profiling being slightly faster, possibly due to more timeouts. B and C behave relatively similar because even without explicit scheduling, both jobs run approximately similar since they autotune the same model. In real-world scenarious with heterogenous workloads, there might be a more drastic difference.\\
-The baseline inference time is \SI{48.6}{\milli\second}. B is \SI{1.5}{\milli\second} (+3\%), C is \SI{0.5}{\milli\second} (+1\%) slower. The fact that C is faster than B is probably caused by the probabilistic nature of configuration selection. The difference to the baseline is relatively small due to the large number of trials which even out the impact of interference. However, even slightly worse inference performance has a large impact with an increasing number of inferences.
+First, we examine the impact of interference that was qualitatively described in Section \ref{sec:scalability}. We compare A, the optimum in terms of autotuning time and inference performance, with B and C (Figure \ref{fig:chart-interference-impact}). B lets jobs naturally interfere, while C forces maximum interference as worst case scenario. Interference is particularly noticeable for model updates since they are rather computationally intensive, which is why we show model update time in every figure.\\
+The baseline completion time from A is \SI{14.5}{\hour}, \SI{6.1}{\hour} (42\%) of which are spent updating the model. Natural interference results in an increase in autotuning time by \SI{4.1}{\hour} (+28\%) while forced interference takes even \SI{5.0}{\hour} (+34\%) longer\footnote{For C, the time spent waiting for the other job to finish a stage introduced by the synchronous scheduling algorithm to force interference was subtracted from the total completion time since it would not occur naturally.}. This significant increase can be attributed to slower model updates, which witness a strong decline in performance. Compared with the baseline, the total time spent updating the model increases by \SI{3.8}{\hour} (+62\%) for B and by \SI{5.2}{\hour} (+85\%) for C. Build time only increases marginally, with profiling being slightly faster, possibly due to more timeouts. The baseline inference time is \SI{48.6}{\milli\second}. B is \SI{1.5}{\milli\second}, C is \SI{0.5}{\milli\second} slower. 
 
-\begin{figure}[ht]
+\begin{figure}[t]
 	\begin{minipage}[b]{.6\textwidth}
 		\centering\includegraphics[width=\textwidth]{chart_interference_impact_completion}
 		\subcaption{Completion time}\label{fig:chart-interference-impact-completion}
@@ -60,9 +59,9 @@ The baseline inference time is \SI{48.6}{\milli\second}. B is \SI{1.5}{\milli\se
 	\label{fig:chart-interference-impact}
 \end{figure}
 
-We examine experiments D and E to evaluate the greedy and fair scheduler algorithm design (Figure \ref{fig:chart-interleaving}), comparing them with A as baseline. Using greedy interleaving, autotuning completes in \SI{20.4}{\hour}, \SI{5.9}{\hour} slower than A. While model update time stays about the same (\SI{0.2}{\hour} slower than A), \SI{5.5}{\hour} (27\%) of the total time is now spent waiting for resources to become free, to prevent interference. Fair interleaving is impacted even more by waiting, with total autotuning time increasing to \SI{24.1}{\hour}, \SI{9.6}{\hour} (62\%) slower than A. Model update time remains about the same (\SI{0.6}{\hour} slower than A), waiting time accumulates to \SI{8.9}{\hour} (37\% of total autotuning). Building and profiling time do not change. While the total completion time deteriorates massively, inference performance matches the baseline of \SI{48.6}{\milli\second} for both D and E because profiling interference is avoided.
+We examine experiments D and E to evaluate the greedy and fair scheduler algorithm design (Figure \ref{fig:chart-interleaving}), comparing them with A as baseline. Using greedy interleaving, autotuning completes in \SI{20.4}{\hour}, \SI{5.9}{\hour} slower than A. While model update time stays about the same, \SI{5.5}{\hour} (27\%) of the total time is now spent waiting\footnote{Only stage execution times can be measured. Wait time and non-stage times (transfer learning, file operations, about \SI{0.49}{\hour} for every job) need to be derived. Wait time for interleaving is calculated as follows: $t_{wait} = t_{total} - \sum_{i}t_{stage,i} - \SI{0.49}{\hour}$} for resources to become free to prevent interference. Fair interleaving is impacted even more by waiting, with total autotuning time increasing to \SI{24.1}{\hour}, \SI{9.6}{\hour} (+62\%) slower than A. Model update time remains about the same again, but wait time accumulates to \SI{8.9}{\hour} (37\% of total autotuning). Building and profiling time do not change. While the total completion time deteriorates, inference performance matches the baseline of \SI{48.6}{\milli\second} for both D and E.
 
-\begin{figure}[ht]
+\begin{figure}[t]
 	\begin{minipage}[b]{.6\textwidth}
 		\centering\includegraphics[width=\textwidth]{chart_interleaving_completion}
 		\subcaption{Completion time}\label{fig:chart-interleaving-completion}
@@ -72,15 +71,13 @@ We examine experiments D and E to evaluate the greedy and fair scheduler algorit
 		\centering\includegraphics[width=\textwidth]{chart_interleaving_inference}
 		\subcaption{Inference performance}\label{fig:chart-interleaving-inference}
 	\end{minipage}
-	\caption[Result of greedy versus fair interleaving]{Greedy versus fair interleaving}
+	\caption[Results of greedy versus fair interleaving]{Greedy versus fair interleaving}
 	\label{fig:chart-interleaving}
 \end{figure}
 
-Finally, we examine the effect of employing bundling of stages as opposed to individually scheduling them. The greedy algorithm is used in F, the fair algorithm is used in G.
-Compare to baseline and non-bundling
-F already acts like batching
+Finally, we examine the effect of employing stage bundling as opposed to individually scheduling them. The greedy algorithm is used in F, the fair algorithm is used in G. With bundling, greedy interleaving performs about the same as without bundling. On the other hand, fair interleaving completes \SI{2.4}{\hour} (-10\%) earlier than the individually scheduled version due to a total wait time that it \SI{2.7}{\hour} (-30\%) shorter. As before, model update time remains relatively similar. Inference time in F is \SI{0.4}{\milli\second} faster than in D, while G's is slower by \SI{1.3}{\milli\second}.
 
-\begin{figure}[ht]
+\begin{figure}[t]
 	\begin{minipage}[b]{.6\textwidth}
 		\centering\includegraphics[width=\textwidth]{chart_bundling_completion}
 		\subcaption{Completion time}\label{fig:chart-bundling-completion}
@@ -90,30 +87,21 @@ F already acts like batching
 		\centering\includegraphics[width=\textwidth]{chart_bundling_inference}
 		\subcaption{Inference performance}\label{fig:chart-bundling-inference}
 	\end{minipage}
-	\caption[Result of individual versus bundling interleaving]{Individual versus bundling interleaving}
+	\caption[Results of greedy versus fair interleaving with bundling]{Greedy versus fair interleaving with bundling}
 	\label{fig:chart-bundling}
 \end{figure}
 
 \section{Discussion}
-The objective of large-scale autotuning is to achieve the autotuning time and inference performance of running only a single job on each server, but with shared resources to keep the amount of required hardware at a minimum. Single-job autotuning is represented by Setup A, which is why we use it as baseline for comparisons with the other experiments.
+The objective of large-scale autotuning is to achieve the autotuning time and inference performance of running only a single job on each server, but with shared resources to keep the amount of required hardware at a minimum. Single-job autotuning is represented by Setup A, which is why we use it as baseline for comparisons with the other experiments. Because our evaluation is limited to a single machine type and model, more experiments are required for a general analysis.
 
-for similar jobs on few resources: bundling
-running update model and build of one job directly after another will probably decrease waiting time, since that job can then already use the target device, so there is less target device idle time
-for heterogenous jobs and on larger-scale: individual interleaved provides more flexibility in combination with a more intelligent algorithm
-Believe that more and heterogenous jobs that vary significantly in complexity will enable better resource utilization and less wait time, given a more intelligent scheduler
+In B and C we show the detrimental effects of interference on performance which motivated the creation of a scheduler. If it were not for this, resources could be shared and jobs could be run in parallel without control by a central component. B and C behave relatively similar because even without explicit scheduling, both jobs run approximately similar since they autotune the same model. In real-world scenarios with diverse workloads, there might be a more drastic difference between B and C. The fact that C has faster inference than B is probably caused by the probabilistic nature of configuration selection. The difference to the baseline is relatively small due to the large number of trials which even out the impact of interference. However, even slightly worse inference performance has a large impact with an increasing number of inferences.
 
-Only used scheduler for TVM, but should work for TC as well because it also has stage dependencies
-greedy vs fair
+Note how interference is avoided with the scheduler in D--G, which manifests in stage times (particularly model updating) that are comparable to single-job autotuning as well as in a good inference performance. However, a significant amount of wait time is introduced which drives up total completion time. Greedy interleaving without bundling shows the shortest wait time in our experiments. Bundling does not show a big effect when comparing D and F because greedy interleaving naturally behaves like bundling. However, fair interleaving benefits much from bundling, remedying the vast wait time.
 
-Limitations:
-Very rudimentary scheduler
-Predictive scheduler using times for task to make scheduling more intelligent,reduce wait times
-use ideas from ~\cite{Ma.2005}
-Requires more control in scheduler, not only simplified interface
-More sophisticated scheduler, requires moving more autotuning logic from client to scheduler
-Add Knows which job is in which stage and how long is each stage estimated to take to load-awareness
+Greedy interleaving works well in our experiments because both jobs are identical and the portion of time spent on the client machine versus time spent on the target device is roughly similar. As a result, wait time is reduced because, after an initial wait period, both jobs alternate nearly perfectly but mutually opposing between client and target. Despite these results, we believe that fair interleaving is the superior algorithm for scheduling heterogeneous jobs with varying complexity on a large scale, as would be the case with \gls{aaas}. Greedy interleaving would allow jobs to monopolize resources for an extended period of time, while fair interleaving allows for a finer control, especially if more resources are available. Bundling in conjunction with the fair algorithm is still an option to interleave homogeneous jobs on few resources, which would show the same effect as the greedy algorithm in our experiment.
 
-The scheduler can be enhanced with more granularity for production-grade implementations.
-Push instead of busy waiting
+Our scheduler is very rudimentary at this point, leaving much room for improvement. While the concept of interleaving seems promising, a more intelligent approach than fair round-robin could be employed to fill idle time optimally while keeping average wait time low. For example, a predictive scheduler could use knowledge from previous tasks to make a more educated decision that will maximize resource utilization. This would augment the notion of load-awareness with knowledge about the estimated stage execution time. Such a scheduler could then leverage the exact or heuristic interleaving algorithm from \cite{Ma.2005}. However, a more sophisticated algorithm might require finer control over the stages, which cannot be provided by the client's current resource/stage interface. Trading off a complex client but simple scheduler for a thin, stateless client and autotuning-aware scheduler by shifting responsibilities might become a necessity.
 
-Evaluation only with limited set of hardware and models, general statement requires more experiments
+Furthermore, the scheduler needs to be enhanced with support for multiple resources of the same type. At this point, all target devices are regarded as a single, atomic resource. More granularity is essential for production-grade implementations in an \gls{aaas} platform. This would go hand in hand with eliminating the tracker and letting the scheduler assign target devices to clients. A trivial refinement is replacing the busy waiting for a stage to be done in the scheduler algorithm, resulting in an excess of redundant \gls{rpc} calls, by a push-based approach, where the client notifies the scheduler once a stage has completed.
+
+We used our scheduler only for autotuning with TVM. However, other autotuning frameworks like \gls{tc} that have the same scaling issues might also profit from our solution. The \gls{aaas} platform might even provide support for a variety of autotuning frameworks.
